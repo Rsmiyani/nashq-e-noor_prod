@@ -48,12 +48,30 @@ interface AdminPortalProps {
 type TabType = 'dashboard' | 'products' | 'pricing' | 'categories';
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
-  // Authentication State
+  // Authentication State with 8-Hour Session Expiry
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('naqsh_admin_logged_in') === 'true';
+    const sessionStr = localStorage.getItem('naqsh_admin_session');
+    if (!sessionStr) return false;
+    try {
+      const session = JSON.parse(sessionStr);
+      // Valid for 8 hours
+      if (session && session.auth === true && Date.now() - session.timestamp < 8 * 60 * 60 * 1000) {
+        return true;
+      }
+    } catch {
+      localStorage.removeItem('naqsh_admin_session');
+    }
+    return false;
   });
+
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
+  const [failedAttempts, setFailedAttempts] = useState<number>(() => {
+    return parseInt(sessionStorage.getItem('naqsh_auth_failures') || '0', 10);
+  });
+  const [lockoutTime, setLockoutTime] = useState<number>(() => {
+    return parseInt(sessionStorage.getItem('naqsh_lockout_until') || '0', 10);
+  });
 
   // Active Tab & View Mode
   const [activeTab, setActiveTab] = useState<TabType>('products');
@@ -107,22 +125,51 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
   const [quickPriceMap, setQuickPriceMap] = useState<Record<string, string>>({});
 
-  const configuredPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
+  const configuredPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Noor@2026#AtelierStudio$Key';
 
-  // Handle Login
+  // Handle Login with Rate Limiting & Lockout Protection
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === configuredPassword || passwordInput === 'admin' || passwordInput === 'admin123') {
+
+    // Check if in lockout period
+    if (lockoutTime && Date.now() < lockoutTime) {
+      const remainingSeconds = Math.ceil((lockoutTime - Date.now()) / 1000);
+      setAuthError(`Security Lockout: Too many failed attempts. Try again in ${remainingSeconds}s.`);
+      return;
+    }
+
+    if (passwordInput === configuredPassword) {
       setIsAuthenticated(true);
-      localStorage.setItem('naqsh_admin_logged_in', 'true');
+      localStorage.setItem(
+        'naqsh_admin_session',
+        JSON.stringify({ auth: true, timestamp: Date.now() })
+      );
+      sessionStorage.removeItem('naqsh_auth_failures');
+      sessionStorage.removeItem('naqsh_lockout_until');
+      setFailedAttempts(0);
+      setLockoutTime(0);
       setAuthError('');
+      setPasswordInput('');
     } else {
-      setAuthError('Incorrect studio passcode. Please try again.');
+      const nextFailures = failedAttempts + 1;
+      setFailedAttempts(nextFailures);
+      sessionStorage.setItem('naqsh_auth_failures', String(nextFailures));
+
+      if (nextFailures >= 5) {
+        const lockoutUntil = Date.now() + 5 * 60 * 1000; // 5-minute lockout
+        setLockoutTime(lockoutUntil);
+        sessionStorage.setItem('naqsh_lockout_until', String(lockoutUntil));
+        setAuthError('Security Alert: 5 consecutive failed attempts. Portal locked for 5 minutes.');
+      } else {
+        const remaining = 5 - nextFailures;
+        setAuthError(`Incorrect studio passcode. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
+      }
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('naqsh_admin_session');
     localStorage.removeItem('naqsh_admin_logged_in');
   };
 
@@ -420,15 +467,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
               <input
                 id="admin-password"
                 type="password"
+                disabled={Boolean(lockoutTime && Date.now() < lockoutTime)}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                placeholder="Enter admin passcode..."
-                className="w-full px-3.5 py-2.5 bg-warm-ivory border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:outline-none focus:border-gold"
+                placeholder={lockoutTime && Date.now() < lockoutTime ? 'Portal locked...' : 'Enter studio passcode...'}
+                className="w-full px-3.5 py-2.5 bg-warm-ivory border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:outline-none focus:border-gold disabled:opacity-50"
                 autoFocus
               />
               {authError && (
-                <p className="text-xs text-rose-600 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
+                <p className="text-xs text-rose-600 mt-1.5 flex items-start gap-1.5 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span>{authError}</span>
                 </p>
               )}
@@ -436,7 +484,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
 
             <button
               type="submit"
-              className="w-full py-3 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold uppercase tracking-wider rounded-lg shadow-sm transition-colors"
+              disabled={Boolean(lockoutTime && Date.now() < lockoutTime)}
+              className="w-full py-3 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold uppercase tracking-wider rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Sign In to Atelier Dashboard
             </button>
