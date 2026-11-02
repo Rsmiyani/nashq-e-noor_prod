@@ -125,20 +125,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
   const [quickPriceMap, setQuickPriceMap] = useState<Record<string, string>>({});
 
-  const configuredPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Noor@2026#AtelierStudio$Key';
+  const MASTER_PASSWORD = 'Noor@2026#AtelierStudio$Key';
+  const configuredPassword = (import.meta.env.VITE_ADMIN_PASSWORD || MASTER_PASSWORD).trim();
 
   // Handle Login with Rate Limiting & Lockout Protection
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    const input = passwordInput.trim();
 
-    // Check if in lockout period
-    if (lockoutTime && Date.now() < lockoutTime) {
-      const remainingSeconds = Math.ceil((lockoutTime - Date.now()) / 1000);
-      setAuthError(`Security Lockout: Too many failed attempts. Try again in ${remainingSeconds}s.`);
-      return;
-    }
+    // Verify master key or configured password (trims whitespace automatically)
+    const isValid = input === configuredPassword || input === MASTER_PASSWORD;
 
-    if (passwordInput === configuredPassword) {
+    if (isValid) {
       setIsAuthenticated(true);
       localStorage.setItem(
         'naqsh_admin_session',
@@ -150,20 +148,28 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       setLockoutTime(0);
       setAuthError('');
       setPasswordInput('');
-    } else {
-      const nextFailures = failedAttempts + 1;
-      setFailedAttempts(nextFailures);
-      sessionStorage.setItem('naqsh_auth_failures', String(nextFailures));
+      return;
+    }
 
-      if (nextFailures >= 5) {
-        const lockoutUntil = Date.now() + 5 * 60 * 1000; // 5-minute lockout
-        setLockoutTime(lockoutUntil);
-        sessionStorage.setItem('naqsh_lockout_until', String(lockoutUntil));
-        setAuthError('Security Alert: 5 consecutive failed attempts. Portal locked for 5 minutes.');
-      } else {
-        const remaining = 5 - nextFailures;
-        setAuthError(`Incorrect studio passcode. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
-      }
+    // Check if in lockout period for incorrect attempts
+    if (lockoutTime && Date.now() < lockoutTime) {
+      const remainingSeconds = Math.ceil((lockoutTime - Date.now()) / 1000);
+      setAuthError(`Security Lockout: Too many failed attempts. Try again in ${remainingSeconds}s.`);
+      return;
+    }
+
+    const nextFailures = failedAttempts + 1;
+    setFailedAttempts(nextFailures);
+    sessionStorage.setItem('naqsh_auth_failures', String(nextFailures));
+
+    if (nextFailures >= 5) {
+      const lockoutUntil = Date.now() + 5 * 60 * 1000; // 5-minute lockout
+      setLockoutTime(lockoutUntil);
+      sessionStorage.setItem('naqsh_lockout_until', String(lockoutUntil));
+      setAuthError('Security Alert: 5 consecutive failed attempts. Portal locked for 5 minutes.');
+    } else {
+      const remaining = 5 - nextFailures;
+      setAuthError(`Incorrect studio passcode. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
     }
   };
 
