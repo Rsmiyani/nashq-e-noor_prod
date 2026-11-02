@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
-import { allProducts, CategoryKey } from '../data/products';
+import { CategoryKey } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 
 interface CollectionShowcaseProps {
   onSelectCollection: (category: CategoryKey) => void;
@@ -120,6 +121,8 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
 export const CollectionShowcase: React.FC<CollectionShowcaseProps> = ({
   onSelectCollection,
 }) => {
+  const { products: allProducts } = useCatalog();
+
   // Pre-filter authentic category images from the catalog (curating up to 10 photos per card)
   const categoryImages = useMemo(() => {
     return {
@@ -129,7 +132,7 @@ export const CollectionShowcase: React.FC<CollectionShowcaseProps> = ({
       hoop: allProducts.filter((p) => p.category === 'hoop').map((p) => p.image).slice(0, 10),
       hues: allProducts.filter((p) => p.category === 'hues').map((p) => p.image).slice(0, 10),
     };
-  }, []);
+  }, [allProducts]);
 
   return (
     <section id="collections" className="pt-8 sm:pt-10 pb-10 sm:pb-14 bg-champagne-light/50 border-y border-champagne/40">

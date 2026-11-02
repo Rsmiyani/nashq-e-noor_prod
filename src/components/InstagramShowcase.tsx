@@ -1,21 +1,24 @@
 import React from 'react';
 import { Instagram, ArrowUpRight } from 'lucide-react';
-import { allProducts, INSTAGRAM_URL, INSTAGRAM_HANDLE, Product } from '../data/products';
+import { INSTAGRAM_URL, INSTAGRAM_HANDLE, Product } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 
 interface InstagramShowcaseProps {
   onSelectProduct: (product: Product) => void;
 }
 
 export const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ onSelectProduct }) => {
+  const { products: allProducts } = useCatalog();
+
   // Select 6 stunning authentic products across categories
   const instagramMosaic: Product[] = [
     allProducts.find((p) => p.id === 'BRD-003') || allProducts[0],
-    allProducts.find((p) => p.id === 'EMB-005') || allProducts[15],
-    allProducts.find((p) => p.id === 'FLR-012') || allProducts[40],
-    allProducts.find((p) => p.id === 'HOP-007') || allProducts[80],
-    allProducts.find((p) => p.id === 'HUE-011') || allProducts[100],
-    allProducts.find((p) => p.id === 'FLR-028') || allProducts[55],
-  ];
+    allProducts.find((p) => p.id === 'EMB-005') || allProducts[15] || allProducts[0],
+    allProducts.find((p) => p.id === 'FLR-012') || allProducts[40] || allProducts[0],
+    allProducts.find((p) => p.id === 'HOP-007') || allProducts[80] || allProducts[0],
+    allProducts.find((p) => p.id === 'HUE-011') || allProducts[100] || allProducts[0],
+    allProducts.find((p) => p.id === 'FLR-028') || allProducts[55] || allProducts[0],
+  ].filter(Boolean);
 
   return (
     <section className="pt-8 sm:pt-10 pb-12 sm:pb-16 bg-warm-ivory border-t border-champagne/40">
