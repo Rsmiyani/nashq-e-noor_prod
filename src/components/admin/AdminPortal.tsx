@@ -15,7 +15,6 @@ import {
   Sparkles,
   Layers,
   DollarSign,
-  Database,
   ExternalLink,
   SlidersHorizontal,
   LayoutDashboard,
@@ -45,7 +44,7 @@ interface AdminPortalProps {
   onExit: () => void;
 }
 
-type TabType = 'dashboard' | 'products' | 'pricing' | 'categories' | 'setup';
+type TabType = 'dashboard' | 'products' | 'pricing' | 'categories';
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   // Authentication State
@@ -202,7 +201,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       setFormLoading(true);
       const base64 = await convertFileToBase64(file);
       setFormImageBase64(base64);
-      showStatus('Photo converted to optimized Base64!', 'success');
+      showStatus('Photo uploaded successfully!', 'success');
     } catch (err: any) {
       showStatus('Failed to process image: ' + err.message, 'error');
     } finally {
@@ -334,41 +333,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
     return products.length - missingPriceCount;
   }, [products.length, missingPriceCount]);
 
-  // SQL Setup Script for manual reference
-  const sqlSetupScript = `-- 1. Categories Table
-CREATE TABLE IF NOT EXISTS public.categories (
-  id TEXT PRIMARY KEY,
-  label TEXT NOT NULL,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 2. Products Table (Image stored as Base64 text)
-CREATE TABLE IF NOT EXISTS public.products (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  category TEXT NOT NULL REFERENCES public.categories(id) ON DELETE CASCADE,
-  category_label TEXT NOT NULL,
-  image TEXT NOT NULL,
-  source_file TEXT,
-  description TEXT,
-  price TEXT NOT NULL DEFAULT '',
-  tags TEXT[] DEFAULT '{}',
-  featured BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 3. Row Level Security Policies
-ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
-CREATE POLICY "Public Manage Categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
-
-CREATE POLICY "Public Read Products" ON public.products FOR SELECT USING (true);
-CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) WITH CHECK (true);`;
-
   // LOGIN SCREEN
   if (!isAuthenticated) {
     return (
@@ -463,11 +427,6 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
       label: 'Categories',
       icon: Layers,
       badge: categories.length,
-    },
-    {
-      id: 'setup',
-      label: 'Database & SQL',
-      icon: Database,
     },
   ];
 
@@ -600,32 +559,24 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
                 {activeTab === 'products' && 'Product Management'}
                 {activeTab === 'pricing' && 'Quick Price Batch Editor'}
                 {activeTab === 'categories' && 'Collections & Categories'}
-                {activeTab === 'setup' && 'Database Schema & Setup'}
               </h2>
               <p className="text-xs text-muted-brown hidden sm:block">
                 {activeTab === 'dashboard' && 'High-level atelier overview and inventory metrics.'}
                 {activeTab === 'products' && 'Manage atelier creations, photography, and collections.'}
-                {activeTab === 'pricing' && 'Directly enter and save product prices in Supabase.'}
+                {activeTab === 'pricing' && 'Directly enter and save product prices.'}
                 {activeTab === 'categories' && 'Organize design collections and filter taxonomy.'}
-                {activeTab === 'setup' && 'Database connection status and schema references.'}
               </p>
             </div>
           </div>
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-2.5 sm:gap-3.5">
-            {/* Database Live Pill */}
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-semibold text-emerald-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Supabase Live</span>
-            </div>
-
             {/* Refresh Button */}
             <button
               onClick={() => refreshData(true)}
               disabled={loading}
               className="p-2 text-espresso/70 hover:text-gold hover:bg-champagne/30 rounded-xl transition-colors border border-champagne/40"
-              title="Force sync database"
+              title="Refresh catalog"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-gold' : ''}`} />
             </button>
@@ -689,7 +640,7 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
                 </span>
                 <span className="text-[11px] text-emerald-600 font-semibold block mt-1 flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
-                  <span>100% in Supabase</span>
+                  <span>Live in Catalog</span>
                 </span>
               </div>
             </div>
@@ -733,18 +684,25 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
               </div>
             </div>
 
-            {/* Card 4: Database Status */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-cream border border-champagne shadow-xs flex items-center gap-4">
+            {/* Card 4: Ready with Pricing */}
+            <div
+              onClick={() => {
+                setActiveTab('pricing');
+                setPriceFilter('priced');
+              }}
+              className="p-4 sm:p-5 rounded-2xl bg-cream border border-champagne shadow-xs flex items-center gap-4 cursor-pointer hover:border-gold transition-colors"
+              title="Click to view priced creations"
+            >
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0">
-                <Database className="w-6 h-6" />
+                <CheckCircle2 className="w-6 h-6" />
               </div>
               <div className="min-w-0">
-                <span className="text-xs text-muted-brown font-medium block">Database Status</span>
+                <span className="text-xs text-muted-brown font-medium block">Priced Pieces</span>
                 <span className="font-serif text-xl sm:text-2xl font-bold text-espresso leading-none">
-                  Live Sync
+                  {products.length - missingPriceCount}
                 </span>
                 <span className="text-[11px] text-emerald-600 font-semibold block mt-1">
-                  Base64 + Postgres
+                  Ready with catalog pricing
                 </span>
               </div>
             </div>
@@ -1188,53 +1146,6 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
           )}
 
           {/* ========================================================== */}
-          {/* TAB 4: DATABASE & SQL SCHEMA                               */}
-          {/* ========================================================== */}
-          {activeTab === 'setup' && (
-            <div className="bg-cream p-6 sm:p-8 rounded-2xl border border-champagne space-y-6">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-serif text-lg font-bold text-espresso">Supabase SQL Schema &amp; Health</h3>
-                  <p className="text-xs text-muted-brown">
-                    Diagnostic view of your live Supabase database tables and public access policies.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(sqlSetupScript);
-                    showStatus('SQL copied to clipboard!', 'success');
-                  }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-gold text-warm-ivory text-xs font-semibold uppercase tracking-wider rounded-xl shadow-sm hover:bg-gold-dark transition-colors self-start sm:self-auto"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy SQL Script</span>
-                </button>
-              </div>
-
-              {/* Status summary */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 bg-warm-ivory rounded-xl border border-champagne">
-                  <span className="text-xs text-muted-brown block">Categories Table</span>
-                  <span className="font-bold text-emerald-700 text-sm">Online ({categories.length} records)</span>
-                </div>
-                <div className="p-4 bg-warm-ivory rounded-xl border border-champagne">
-                  <span className="text-xs text-muted-brown block">Products Table</span>
-                  <span className="font-bold text-emerald-700 text-sm">Online ({products.length} records)</span>
-                </div>
-                <div className="p-4 bg-warm-ivory rounded-xl border border-champagne">
-                  <span className="text-xs text-muted-brown block">Image Format</span>
-                  <span className="font-bold text-gold text-sm">Optimized Base64 in DB</span>
-                </div>
-              </div>
-
-              <pre className="p-4 rounded-xl bg-espresso-dark text-champagne text-xs font-mono overflow-x-auto leading-relaxed border border-champagne/30">
-                {sqlSetupScript}
-              </pre>
-            </div>
-          )}
-
-          {/* ========================================================== */}
           {/* TAB 5: DASHBOARD OVERVIEW                                  */}
           {/* ========================================================== */}
           {activeTab === 'dashboard' && (
@@ -1272,7 +1183,7 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
                     >
                       <div className="flex items-center gap-3">
                         <Plus className="w-4 h-4 text-gold" />
-                        <span>Upload New Creation (Base64)</span>
+                        <span>Upload New Creation</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-brown" />
                     </button>
@@ -1335,10 +1246,10 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
             </div>
 
             <form onSubmit={handleSaveProduct} className="space-y-4">
-              {/* Photo Upload & Base64 Converter */}
+              {/* Photo Upload */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-espresso mb-1">
-                  Product Photograph (Converts to Base64) <span className="text-rose-600">*</span>
+                  Product Photograph <span className="text-rose-600">*</span>
                 </label>
                 <div className="flex items-center gap-4">
                   {formImageBase64 ? (
@@ -1359,7 +1270,7 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
                       className="text-xs text-muted-brown file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-champagne file:text-espresso hover:file:bg-gold hover:file:text-warm-ivory cursor-pointer"
                     />
                     <p className="text-[10px] text-muted-brown">
-                      Accepts WebP, JPG, PNG. Image will be automatically optimized to Base64 format.
+                      Accepts WebP, JPG, PNG. Photographs are automatically optimized.
                     </p>
                   </div>
                 </div>
@@ -1456,7 +1367,7 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
                   disabled={formLoading}
                   className="px-5 py-2.5 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold uppercase tracking-wider rounded-xl shadow-sm disabled:opacity-50"
                 >
-                  {formLoading ? 'Saving to Supabase...' : 'Save Creation'}
+                  {formLoading ? 'Saving Creation...' : 'Save Creation'}
                 </button>
               </div>
             </form>
