@@ -226,13 +226,25 @@ async function revalidateProductsInBackground() {
   if (isRevalidating) return;
   isRevalidating = true;
   try {
-    const { count } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true });
+    const [{ count }, { data: latestRow }] = await Promise.all([
+      supabase.from('products').select('*', { count: 'exact', head: true }),
+      supabase.from('products').select('updated_at').order('updated_at', { ascending: false }).limit(1),
+    ]);
+
+    const latestUpdatedAt = latestRow?.[0]?.updated_at;
+    const lastSynced = typeof localStorage !== 'undefined' ? localStorage.getItem('naqsh_last_synced_updated_at') : null;
 
     const cached = await getCachedProducts();
-    if (!cached || (count !== null && cached.length !== count)) {
-      await fetchAndCacheAllProducts();
+    if (!cached || (count !== null && cached.length !== count) || (latestUpdatedAt && latestUpdatedAt !== lastSynced)) {
+      const fresh = await fetchAndCacheAllProducts();
+      if (latestUpdatedAt && typeof localStorage !== 'undefined') {
+        localStorage.setItem('naqsh_last_synced_updated_at', latestUpdatedAt);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('naqsh:catalog_refreshed', { detail: { products: fresh } })
+        );
+      }
     }
   } catch (err) {
     console.debug('[Supabase] Background revalidation failed silently:', err);
@@ -265,6 +277,7 @@ export async function upsertProduct(product: {
     tags = tags.filter((t) => t !== 'inactive');
   }
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('products')
     .upsert({
@@ -278,15 +291,18 @@ export async function upsertProduct(product: {
       price: product.price?.trim() || '',
       tags,
       featured: !!product.featured,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     })
     .select()
     .single();
 
   if (error) throw error;
 
-  // Immediately update local cache
-  updateSingleCachedProduct({
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('naqsh_last_synced_updated_at', now);
+  }
+
+  const mappedProduct: Product = {
     id: product.id.trim(),
     name: product.name.trim(),
     category: product.category.toLowerCase().trim() as any,
@@ -298,7 +314,22 @@ export async function upsertProduct(product: {
     tags,
     featured: !!product.featured,
     status: isInactive ? 'inactive' : 'active',
-  });
+  };
+
+  // Immediately update local cache
+  await updateSingleCachedProduct(mappedProduct);
+
+  // Broadcast event across app for instant zero-delay sync
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('naqsh:catalog_updated', {
+        detail: {
+          type: 'upsert',
+          product: mappedProduct,
+        },
+      })
+    );
+  }
 
   return data;
 }
@@ -316,22 +347,33 @@ export async function updateProductStatus(id: string, status: 'active' | 'inacti
       ? Array.from(new Set([...currentTags, 'inactive']))
       : currentTags.filter((t) => t !== 'inactive');
 
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from('products')
     .update({
       tags: newTags,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     })
     .eq('id', id);
 
   if (error) throw error;
 
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('naqsh_last_synced_updated_at', now);
+  }
+
   // Immediately update local cache
-  if (cached) {
-    const updated = cached.map((p) =>
-      p.id === id ? { ...p, tags: newTags, status } : p
+  if (currentProd) {
+    await updateSingleCachedProduct({ ...currentProd, tags: newTags, status });
+  }
+
+  // Broadcast event across app for instant zero-delay sync
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('naqsh:catalog_updated', {
+        detail: { type: 'status', id, status },
+      })
     );
-    await setCachedProducts(updated);
   }
 }
 
@@ -339,23 +381,40 @@ export async function updateProductStatus(id: string, status: 'active' | 'inacti
  * Quick inline price update for an existing product
  */
 export async function updateProductPrice(id: string, price: string): Promise<void> {
+  const formattedPrice = price.trim();
+  const now = new Date().toISOString();
+
   const { error } = await supabase
     .from('products')
     .update({
-      price: price.trim(),
-      updated_at: new Date().toISOString(),
+      price: formattedPrice,
+      updated_at: now,
     })
     .eq('id', id);
 
   if (error) throw error;
 
-  // Update in local cache as well
-  getCachedProducts().then((cached) => {
-    if (cached) {
-      const updated = cached.map((p) => (p.id === id ? { ...p, price: price.trim() } : p));
-      setCachedProducts(updated);
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('naqsh_last_synced_updated_at', now);
+  }
+
+  // Update in local IndexedDB cache immediately
+  const cached = await getCachedProducts();
+  if (cached) {
+    const target = cached.find((p) => p.id === id);
+    if (target) {
+      await updateSingleCachedProduct({ ...target, price: formattedPrice });
     }
-  });
+  }
+
+  // Broadcast event across app for instant zero-delay sync
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('naqsh:catalog_updated', {
+        detail: { type: 'price', id, price: formattedPrice },
+      })
+    );
+  }
 }
 
 /**
@@ -366,7 +425,16 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) throw error;
 
   // Remove from cache
-  removeSingleCachedProduct(id);
+  await removeSingleCachedProduct(id);
+
+  // Broadcast event across app for instant zero-delay sync
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('naqsh:catalog_updated', {
+        detail: { type: 'delete', id },
+      })
+    );
+  }
 }
 
 /**

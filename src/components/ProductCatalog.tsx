@@ -21,7 +21,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   searchQuery,
   onSearchChange,
 }) => {
-  const { products: allProducts, categories: dynamicCategories } = useCatalog();
+  const { products: allProducts, categories: dynamicCategories, loading } = useCatalog();
   const [sortBy, setSortBy] = useState<'default' | 'id-asc' | 'id-desc'>('default');
   const [visibleCount, setVisibleCount] = useState<number>(24);
   const [showAllInAllTab, setShowAllInAllTab] = useState<boolean>(false);
@@ -325,6 +325,20 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               </div>
             )}
           </>
+        ) : loading ? (
+          /* Luxury Shimmer Skeleton Loading while Supabase products load */
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-cream rounded-lg overflow-hidden border border-champagne/60 p-4 space-y-3 animate-pulse"
+              >
+                <div className="aspect-[4/5] bg-champagne/30 rounded-md" />
+                <div className="h-4 bg-champagne/40 rounded w-3/4" />
+                <div className="h-3 bg-champagne/20 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
         ) : (
           /* Empty Search State */
           <div className="text-center py-16 bg-cream rounded-xl border border-champagne/70 p-8">

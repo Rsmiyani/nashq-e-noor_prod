@@ -224,7 +224,8 @@ function Storefront() {
   );
 }
 
-export default function App() {
+function MainRouter() {
+  const { refreshCatalog } = useCatalog();
   const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
     const hash = window.location.hash.toLowerCase();
     const path = window.location.pathname.toLowerCase();
@@ -256,15 +257,20 @@ export default function App() {
       window.history.pushState(null, '', '/');
     }
     setIsAdminRoute(false);
-  }, []);
+    refreshCatalog(true);
+  }, [refreshCatalog]);
 
+  return isAdminRoute ? (
+    <AdminPortal onExit={handleExitAdmin} />
+  ) : (
+    <Storefront />
+  );
+}
+
+export default function App() {
   return (
     <CatalogProvider>
-      {isAdminRoute ? (
-        <AdminPortal onExit={handleExitAdmin} />
-      ) : (
-        <Storefront />
-      )}
+      <MainRouter />
     </CatalogProvider>
   );
 }
