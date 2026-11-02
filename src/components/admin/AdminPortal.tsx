@@ -34,6 +34,7 @@ import {
   fetchLiveCategories,
   upsertProduct,
   updateProductPrice,
+  updateProductStatus,
   deleteProduct,
   upsertCategory,
   convertFileToBase64,
@@ -80,6 +81,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [priceFilter, setPriceFilter] = useState<'all' | 'missing' | 'priced'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   // Modals & Forms
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -93,6 +95,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   const [formDescription, setFormDescription] = useState('');
   const [formImageBase64, setFormImageBase64] = useState('');
   const [formFeatured, setFormFeatured] = useState(false);
+  const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('active');
   const [formLoading, setFormLoading] = useState(false);
 
   // Category Form State
@@ -176,6 +179,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
     setFormDescription('');
     setFormImageBase64('');
     setFormFeatured(false);
+    setFormStatus('active');
     setIsAddModalOpen(true);
   };
 
@@ -189,6 +193,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
     setFormDescription(p.description || '');
     setFormImageBase64(p.image);
     setFormFeatured(!!p.featured);
+    setFormStatus(p.status || 'active');
     setIsAddModalOpen(true);
   };
 
@@ -229,6 +234,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
         price: formPrice.trim(),
         description: formDescription.trim(),
         featured: formFeatured,
+        status: formStatus,
       });
 
       showStatus(`Product ${formId} saved successfully!`, 'success');
@@ -238,6 +244,40 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       showStatus('Error saving product: ' + err.message, 'error');
     } finally {
       setFormLoading(false);
+    }
+  };
+
+  // Inline Toggle Product Status (Active vs Inactive)
+  const handleToggleStatus = async (id: string, currentStatus: 'active' | 'inactive' = 'active') => {
+    const nextStatus: 'active' | 'inactive' = currentStatus === 'active' ? 'inactive' : 'active';
+
+    // Optimistic UI update for instant zero-lag feedback
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          const currentTags = p.tags || [];
+          const newTags =
+            nextStatus === 'inactive'
+              ? Array.from(new Set([...currentTags, 'inactive']))
+              : currentTags.filter((t) => t !== 'inactive');
+          return { ...p, status: nextStatus, tags: newTags };
+        }
+        return p;
+      })
+    );
+
+    try {
+      await updateProductStatus(id, nextStatus);
+      showStatus(
+        `${id} is now ${nextStatus === 'active' ? 'Active (Live in catalog)' : 'Inactive (Hidden from storefront)'}`,
+        'success'
+      );
+    } catch (err: any) {
+      // Revert optimistic update on failure
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: currentStatus } : p))
+      );
+      showStatus('Failed to update status: ' + err.message, 'error');
     }
   };
 
@@ -301,6 +341,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       result = result.filter((p) => p.category === selectedCategory);
     }
 
+    if (statusFilter === 'active') {
+      result = result.filter((p) => (p.status || 'active') === 'active');
+    } else if (statusFilter === 'inactive') {
+      result = result.filter((p) => p.status === 'inactive');
+    }
+
     if (priceFilter === 'missing') {
       result = result.filter((p) => !p.price || p.price.trim() === '');
     } else if (priceFilter === 'priced') {
@@ -319,7 +365,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
     }
 
     return result;
-  }, [products, selectedCategory, priceFilter, searchQuery]);
+  }, [products, selectedCategory, statusFilter, priceFilter, searchQuery]);
 
   const displayedProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -332,6 +378,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   const pricedCount = useMemo(() => {
     return products.length - missingPriceCount;
   }, [products.length, missingPriceCount]);
+
+  const activeCount = useMemo(() => {
+    return products.filter((p) => (p.status || 'active') === 'active').length;
+  }, [products]);
+
+  const inactiveCount = useMemo(() => {
+    return products.filter((p) => p.status === 'inactive').length;
+  }, [products]);
 
   // LOGIN SCREEN
   if (!isAuthenticated) {
@@ -638,9 +692,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                 <span className="font-serif text-xl sm:text-2xl font-bold text-espresso leading-none">
                   {products.length}
                 </span>
-                <span className="text-[11px] text-emerald-600 font-semibold block mt-1 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  <span>Live in Catalog</span>
+                <span className="text-[11px] text-emerald-600 font-semibold block mt-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{activeCount} Active</span>
+                  <span className="text-muted-brown/60">·</span>
+                  <span className={inactiveCount > 0 ? 'text-rose-600' : 'text-muted-brown'}>
+                    {inactiveCount} Inactive
+                  </span>
                 </span>
               </div>
             </div>
@@ -751,13 +809,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                     ))}
                   </select>
 
+                  {/* Status Filter (Active / Inactive) */}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="py-2.5 px-3 bg-warm-ivory border border-champagne rounded-xl text-xs font-semibold text-espresso focus:outline-none focus:border-gold"
+                  >
+                    <option value="all">All Statuses ({products.length})</option>
+                    <option value="active">Active Only ({activeCount})</option>
+                    <option value="inactive">Inactive Only ({inactiveCount})</option>
+                  </select>
+
                   {/* Price Status Filter */}
                   <select
                     value={priceFilter}
                     onChange={(e) => setPriceFilter(e.target.value as any)}
                     className="py-2.5 px-3 bg-warm-ivory border border-champagne rounded-xl text-xs font-semibold text-espresso focus:outline-none focus:border-gold"
                   >
-                    <option value="all">All Statuses</option>
+                    <option value="all">All Pricing</option>
                     <option value="missing">Missing Price ({missingPriceCount})</option>
                     <option value="priced">Priced ({pricedCount})</option>
                   </select>
@@ -837,12 +906,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                                 )}
                               </td>
 
-                              {/* Status */}
+                              {/* Status Toggle Button */}
                               <td className="py-3 px-4 whitespace-nowrap">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-champagne/60 text-espresso/70">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  <span>Live</span>
-                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleStatus(p.id, p.status || 'active')}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-200 cursor-pointer shadow-2xs select-none ${
+                                    (p.status || 'active') === 'active'
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 hover:border-emerald-400'
+                                      : 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 hover:border-rose-400'
+                                  }`}
+                                  title={`Click to switch to ${(p.status || 'active') === 'active' ? 'Inactive (Hidden from catalog)' : 'Active (Live in storefront)'}`}
+                                >
+                                  <span
+                                    className={`w-2 h-2 rounded-full ${
+                                      (p.status || 'active') === 'active' ? 'bg-emerald-500' : 'bg-rose-500'
+                                    }`}
+                                  />
+                                  <span>{(p.status || 'active') === 'active' ? 'Active' : 'Inactive'}</span>
+                                </button>
                               </td>
 
                               {/* Actions */}
@@ -909,6 +991,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                           <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-espresso-dark/80 text-warm-ivory backdrop-blur-xs">
                             {p.id}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(p.id, p.status || 'active')}
+                            className={`absolute top-2 right-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all shadow-xs cursor-pointer ${
+                              (p.status || 'active') === 'active'
+                                ? 'bg-emerald-600/90 hover:bg-emerald-700 text-warm-ivory'
+                                : 'bg-rose-600/90 hover:bg-rose-700 text-warm-ivory'
+                            }`}
+                            title={`Click to switch to ${(p.status || 'active') === 'active' ? 'Inactive' : 'Active'}`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                            <span>{(p.status || 'active') === 'active' ? 'Active' : 'Inactive'}</span>
+                          </button>
                         </div>
                         <div className="p-3.5 space-y-1.5 flex-1 flex flex-col justify-between">
                           <div>
@@ -1351,6 +1446,40 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                   placeholder="Describe threadwork stitches, base fabric, craftsmanship details..."
                   className="w-full px-3 py-2 bg-warm-ivory border border-champagne rounded-xl text-xs text-espresso focus:outline-none focus:border-gold resize-none"
                 />
+              </div>
+
+              {/* Status Selector */}
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-espresso mb-1">
+                  Catalog Status
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormStatus('active')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+                      formStatus === 'active'
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-2xs'
+                        : 'bg-warm-ivory border-champagne text-muted-brown hover:bg-champagne/30'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>Active (Live)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormStatus('inactive')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+                      formStatus === 'inactive'
+                        ? 'bg-rose-50 border-rose-400 text-rose-800 shadow-2xs'
+                        : 'bg-warm-ivory border-champagne text-muted-brown hover:bg-champagne/30'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    <span>Inactive (Hidden)</span>
+                  </button>
+                </div>
               </div>
 
               {/* Actions */}

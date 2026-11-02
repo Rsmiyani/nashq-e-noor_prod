@@ -10,7 +10,8 @@ export interface CategoryInfo {
 }
 
 interface CatalogContextType {
-  products: Product[];
+  products: Product[]; // Active products for the public storefront
+  allProducts: Product[]; // All products including inactive
   categories: CategoryInfo[];
   loading: boolean;
   isDbConnected: boolean;
@@ -59,10 +60,15 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     refreshCatalog();
   }, [refreshCatalog]);
 
-  // Compute dynamic category info with counts
+  // Filter active products so public storefront only displays active creations
+  const activeProducts = React.useMemo(() => {
+    return products.filter((p) => p.status !== 'inactive');
+  }, [products]);
+
+  // Compute dynamic category info with counts based on active creations
   const categories: CategoryInfo[] = React.useMemo(() => {
     const countsByCategory: Record<string, number> = {};
-    products.forEach((p) => {
+    activeProducts.forEach((p) => {
       countsByCategory[p.category] = (countsByCategory[p.category] || 0) + 1;
     });
 
@@ -82,12 +88,13 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       count: countsByCategory[c.key] || 0,
       description: c.description,
     }));
-  }, [products, dbCategories]);
+  }, [activeProducts, dbCategories]);
 
   return (
     <CatalogContext.Provider
       value={{
-        products,
+        products: activeProducts,
+        allProducts: products,
         categories,
         loading,
         isDbConnected,

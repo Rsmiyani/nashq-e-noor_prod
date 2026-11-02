@@ -40,6 +40,7 @@ export interface DBProduct {
   price?: string; // empty string for initial items
   tags?: string[];
   featured?: boolean;
+  status?: 'active' | 'inactive';
   created_at?: string;
   updated_at?: string;
 }
@@ -196,18 +197,22 @@ async function fetchAndCacheAllProducts(): Promise<Product[]> {
   }
 
   // Map DB format to storefront Product format
-  const mapped: Product[] = allRows.map((row: DBProduct) => ({
-    id: row.id,
-    name: row.name,
-    category: row.category as any,
-    categoryLabel: row.category_label || `${row.category.charAt(0).toUpperCase() + row.category.slice(1)} Collection`,
-    image: row.image,
-    sourceFile: row.source_file || row.id,
-    description: row.description || '',
-    price: row.price || '',
-    tags: row.tags || [],
-    featured: !!row.featured,
-  }));
+  const mapped: Product[] = allRows.map((row: DBProduct) => {
+    const isInactive = Array.isArray(row.tags) && row.tags.includes('inactive');
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category as any,
+      categoryLabel: row.category_label || `${row.category.charAt(0).toUpperCase() + row.category.slice(1)} Collection`,
+      image: row.image,
+      sourceFile: row.source_file || row.id,
+      description: row.description || '',
+      price: row.price || '',
+      tags: row.tags || [],
+      featured: !!row.featured,
+      status: isInactive ? 'inactive' : 'active',
+    };
+  });
 
   if (mapped.length > 0) {
     await setCachedProducts(mapped);
@@ -250,7 +255,16 @@ export async function upsertProduct(product: {
   price?: string;
   tags?: string[];
   featured?: boolean;
+  status?: 'active' | 'inactive';
 }): Promise<DBProduct> {
+  const isInactive = product.status === 'inactive';
+  let tags = product.tags || [];
+  if (isInactive) {
+    tags = Array.from(new Set([...tags, 'inactive']));
+  } else {
+    tags = tags.filter((t) => t !== 'inactive');
+  }
+
   const { data, error } = await supabase
     .from('products')
     .upsert({
@@ -262,7 +276,7 @@ export async function upsertProduct(product: {
       source_file: product.sourceFile || product.id,
       description: product.description || '',
       price: product.price?.trim() || '',
-      tags: product.tags || [],
+      tags,
       featured: !!product.featured,
       updated_at: new Date().toISOString(),
     })
@@ -281,11 +295,44 @@ export async function upsertProduct(product: {
     sourceFile: product.sourceFile || product.id,
     description: product.description || '',
     price: product.price?.trim() || '',
-    tags: product.tags || [],
+    tags,
     featured: !!product.featured,
+    status: isInactive ? 'inactive' : 'active',
   });
 
   return data;
+}
+
+/**
+ * Inline status toggle for an existing product (Active vs Inactive)
+ */
+export async function updateProductStatus(id: string, status: 'active' | 'inactive'): Promise<void> {
+  const cached = await getCachedProducts();
+  const currentProd = cached?.find((p) => p.id === id);
+  const currentTags = currentProd?.tags || [];
+
+  const newTags =
+    status === 'inactive'
+      ? Array.from(new Set([...currentTags, 'inactive']))
+      : currentTags.filter((t) => t !== 'inactive');
+
+  const { error } = await supabase
+    .from('products')
+    .update({
+      tags: newTags,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) throw error;
+
+  // Immediately update local cache
+  if (cached) {
+    const updated = cached.map((p) =>
+      p.id === id ? { ...p, tags: newTags, status } : p
+    );
+    await setCachedProducts(updated);
+  }
 }
 
 /**

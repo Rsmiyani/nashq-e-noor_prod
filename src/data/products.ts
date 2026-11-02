@@ -20,6 +20,7 @@ export interface Product {
   price: string;
   tags: string[];
   featured?: boolean;
+  status?: 'active' | 'inactive';
 }
 
 export interface CollectionMeta {
