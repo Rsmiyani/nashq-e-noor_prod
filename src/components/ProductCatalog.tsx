@@ -167,9 +167,9 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
         <div className="bg-cream p-4 sm:p-6 rounded-xl border border-champagne/80 shadow-sm mb-10 space-y-4">
           
           {/* Top row: Search and Sort */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             
-            {/* Search Input */}
+            {/* Search Input (16px base on mobile avoids iOS safari zoom) */}
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-espresso/50 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
@@ -180,7 +180,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   setVisibleCount(24);
                 }}
                 placeholder="Search by ID (e.g. BRD-001) or collection..."
-                className="w-full pl-10 pr-9 py-2.5 bg-warm-ivory/60 border border-champagne rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:bg-warm-ivory focus:border-gold focus:outline-none transition-colors"
+                className="w-full pl-10 pr-9 py-2.5 bg-warm-ivory/60 border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:bg-warm-ivory focus:border-gold focus:outline-none transition-colors"
                 aria-label="Search catalog"
               />
               {searchQuery && (
@@ -195,7 +195,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             </div>
 
             {/* Sort & Shuffle Controls */}
-            <div className="flex items-center gap-2.5 justify-end">
+            <div className="flex items-center gap-2 sm:gap-2.5 justify-between sm:justify-end w-full sm:w-auto">
               {isCuratedAllMode && (
                 <button
                   onClick={() => setShuffleSeed((s) => s + 1)}
@@ -203,29 +203,31 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   title="Shuffle random creations across all categories"
                 >
                   <Shuffle className="w-3.5 h-3.5 text-gold" />
-                  <span className="hidden sm:inline">Shuffle Mix</span>
+                  <span>Shuffle Mix</span>
                 </button>
               )}
 
-              <span className="text-xs uppercase tracking-wider text-muted-brown font-medium flex items-center gap-1.5">
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                Sort:
-              </span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="py-2 px-3 bg-warm-ivory/80 border border-champagne rounded-lg text-xs font-medium text-espresso focus:outline-none focus:border-gold"
-                aria-label="Sort products"
-              >
-                <option value="default">Curated Selection</option>
-                <option value="id-asc">Product ID (Ascending)</option>
-                <option value="id-desc">Product ID (Descending)</option>
-              </select>
+              <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                <span className="text-xs uppercase tracking-wider text-muted-brown font-medium flex items-center gap-1">
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">Sort:</span>
+                </span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="py-2 px-2.5 sm:px-3 bg-warm-ivory/80 border border-champagne rounded-lg text-xs font-medium text-espresso focus:outline-none focus:border-gold"
+                  aria-label="Sort products"
+                >
+                  <option value="default">Curated</option>
+                  <option value="id-asc">ID (Asc)</option>
+                  <option value="id-desc">ID (Desc)</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Bottom row: Category Filter Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-2 scrollbar-none" role="tablist" aria-label="Category filters">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 pt-2 scrollbar-none touch-pan-x" role="tablist" aria-label="Category filters">
             {categoryFilters.map((tab) => {
               const isActive = selectedCategory === tab.key;
               return (
@@ -236,7 +238,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                     setShowAllInAllTab(false);
                     setVisibleCount(24);
                   }}
-                  className={`whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-200 flex items-center gap-2 focus:outline-none ${
+                  className={`whitespace-nowrap px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-semibold tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5 sm:gap-2 focus:outline-none ${
                     isActive
                       ? 'bg-gold text-warm-ivory shadow-sm'
                       : 'bg-warm-ivory hover:bg-champagne/40 text-espresso/80 border border-champagne/60'
@@ -246,7 +248,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 >
                   <span>{tab.label}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    className={`text-[9.5px] sm:text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                       isActive ? 'bg-warm-ivory/25 text-warm-ivory' : 'bg-champagne/60 text-espresso/70'
                     }`}
                   >
@@ -279,10 +281,10 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
           )}
         </div>
 
-        {/* Product Grid */}
+        {/* Product Grid - 2 columns on mobile, 3 on tablet, 4 on desktop */}
         {filteredProducts.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
               {displayedProducts.map((product) => (
                 <ProductCard
                   key={product.id}

@@ -24,8 +24,8 @@ export const BrandStory: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
           {/* Left Column: Dual Editorial Images */}
-          <div className="lg:col-span-6 grid grid-cols-2 gap-4 sm:gap-6 relative">
-            <div className="space-y-4">
+          <div className="lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-6 relative">
+            <div className="space-y-3 sm:space-y-4">
               <div className="rounded-xl overflow-hidden shadow-luxury border border-champagne image-zoom-container bg-cream aspect-[4/5]">
                 <img
                   src={brandAssets.detail}
@@ -34,17 +34,17 @@ export const BrandStory: React.FC = () => {
                   loading="lazy"
                 />
               </div>
-              <div className="p-3 bg-cream rounded-lg border border-champagne/60 text-center">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-gold block">
+              <div className="p-2 sm:p-3 bg-cream rounded-lg border border-champagne/60 text-center">
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-gold block leading-tight">
                   Intricate Needlework
                 </span>
-                <span className="text-xs text-muted-brown font-serif italic">
+                <span className="text-[10.5px] sm:text-xs text-muted-brown font-serif italic mt-0.5 block leading-tight">
                   Pure silk threads &amp; metallic zardozi
                 </span>
               </div>
             </div>
 
-            <div className="space-y-4 pt-8 sm:pt-12">
+            <div className="space-y-3 sm:space-y-4 pt-6 sm:pt-12">
               <div className="rounded-xl overflow-hidden shadow-luxury border border-champagne image-zoom-container bg-cream aspect-[4/5]">
                 <img
                   src={brandAssets.teal}
@@ -53,11 +53,11 @@ export const BrandStory: React.FC = () => {
                   loading="lazy"
                 />
               </div>
-              <div className="p-3 bg-cream rounded-lg border border-champagne/60 text-center">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-gold block">
+              <div className="p-2 sm:p-3 bg-cream rounded-lg border border-champagne/60 text-center">
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-gold block leading-tight">
                   Botanical Harmony
                 </span>
-                <span className="text-xs text-muted-brown font-serif italic">
+                <span className="text-[10.5px] sm:text-xs text-muted-brown font-serif italic mt-0.5 block leading-tight">
                   Inspired by blooming Indian gardens
                 </span>
               </div>

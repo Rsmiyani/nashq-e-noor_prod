@@ -156,7 +156,7 @@ export const ContactSection: React.FC = () => {
                           if (nameError) setNameError('');
                         }}
                         placeholder="e.g. Meera Kapoor"
-                        className={`w-full px-3.5 py-2.5 bg-warm-ivory/70 border rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:outline-none transition-colors ${
+                        className={`w-full px-3.5 py-2.5 bg-warm-ivory/70 border rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:outline-none transition-colors ${
                           nameError ? 'border-rose-400 focus:border-rose-500' : 'border-champagne focus:border-gold'
                         }`}
                         required
@@ -183,7 +183,7 @@ export const ContactSection: React.FC = () => {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="e.g. +91 98765 43210"
-                        className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none"
+                        className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none"
                       />
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export const ContactSection: React.FC = () => {
                       id="inquiry-type"
                       value={inquiryType}
                       onChange={(e) => setInquiryType(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-sm text-espresso focus:border-gold focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-base sm:text-sm text-espresso focus:border-gold focus:outline-none"
                     >
                       <option value="Product Information">Product Information &amp; Dimensions</option>
                       <option value="Pricing and Availability">Pricing and Availability</option>
@@ -225,7 +225,7 @@ export const ContactSection: React.FC = () => {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Tell us what you have in mind—color palettes, preferred designs, framing, or delivery dates..."
-                      className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none resize-none"
+                      className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none resize-none"
                     />
                   </div>
 

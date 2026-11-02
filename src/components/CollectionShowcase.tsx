@@ -46,8 +46,8 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
       onClick={() => onSelect(categoryKey)}
       className={`group relative rounded-2xl overflow-hidden cursor-pointer bg-espresso-dark border border-champagne/70 shadow-luxury hover:shadow-luxury-hover transition-all duration-300 flex flex-col justify-end ${
         isFeatured
-          ? 'lg:col-span-5 min-h-[460px] lg:min-h-full'
-          : 'min-h-[290px] sm:min-h-[280px]'
+          ? 'lg:col-span-5 min-h-[340px] xs:min-h-[380px] sm:min-h-[440px] lg:min-h-full'
+          : 'min-h-[220px] xs:min-h-[250px] sm:min-h-[270px]'
       }`}
       role="button"
       tabIndex={0}
@@ -90,13 +90,13 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
       </div>
 
       {/* Reduced, Clean Bottom Content Overlay */}
-      <div className="relative z-10 p-5 sm:p-6 lg:p-7 text-warm-ivory mt-auto">
+      <div className="relative z-10 p-4 xs:p-5 sm:p-6 lg:p-7 text-warm-ivory mt-auto">
         {/* Clean Title - 'Collection' removed */}
         <h3
           className={`font-serif font-bold text-warm-ivory tracking-wide group-hover:text-champagne transition-colors ${
             isFeatured
-              ? 'text-3xl sm:text-4xl lg:text-[2.6rem] mb-1.5 leading-tight'
-              : 'text-2xl sm:text-2xl mb-1 leading-snug'
+              ? 'text-2xl xs:text-3xl sm:text-4xl lg:text-[2.6rem] mb-1.5 leading-tight'
+              : 'text-xl xs:text-2xl mb-1 leading-snug'
           }`}
         >
           {title}
@@ -147,7 +147,7 @@ export const CollectionShowcase: React.FC<CollectionShowcaseProps> = ({
         </div>
 
         {/* Editorial Asymmetric Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-stretch">
           
           {/* Featured Large Card: Bridal (Auto-cycling through bridal pieces) */}
           <ShowcaseCard
@@ -162,7 +162,7 @@ export const CollectionShowcase: React.FC<CollectionShowcaseProps> = ({
           />
 
           {/* 4 Complementary Collection Cards in a 2x2 Grid (Each auto-cycling through its category photos) */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
             <ShowcaseCard
               categoryKey="embroidery"
               title="Embroidery"

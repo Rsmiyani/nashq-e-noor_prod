@@ -72,16 +72,16 @@ export const Header: React.FC<HeaderProps> = ({
     >
       {/* Full-width container spanning edge-to-edge */}
       <div className="w-full px-4 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center justify-between gap-3 sm:gap-6">
           
           {/* Brand Logo & Wordmark Lockup */}
           <button
             onClick={() => handleNavClick('hero')}
-            className="flex items-center gap-3 focus:outline-none group text-left flex-shrink-0"
+            className="flex items-center gap-2 sm:gap-3 focus:outline-none group text-left flex-shrink-0"
             aria-label="Naqsh-e-Noor Home"
           >
             {/* Royal Gold Seal Medallion: Perfectly framing the crest inside the circle */}
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-warm-ivory border-2 border-gold/85 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-gold group-hover:shadow transition-all duration-300 flex-shrink-0 p-0.5">
+            <div className="w-9 h-9 xs:w-10 xs:h-10 sm:w-12 sm:h-12 rounded-full bg-warm-ivory border-2 border-gold/85 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-gold group-hover:shadow transition-all duration-300 flex-shrink-0 p-0.5">
               <img
                 src={brandAssets.logo}
                 alt="Naqsh-e-Noor Crest"
@@ -91,10 +91,10 @@ export const Header: React.FC<HeaderProps> = ({
             
             {/* Elegant Serif Wordmark */}
             <div className="flex flex-col justify-center">
-              <span className="font-serif text-base sm:text-lg lg:text-xl font-bold tracking-[0.16em] uppercase text-espresso leading-none group-hover:text-gold transition-colors">
+              <span className="font-serif text-sm xs:text-base sm:text-lg lg:text-xl font-bold tracking-[0.14em] sm:tracking-[0.16em] uppercase text-espresso leading-none group-hover:text-gold transition-colors">
                 Naqsh-e-Noor
               </span>
-              <span className="text-[8.5px] sm:text-[9.5px] font-sans tracking-[0.28em] uppercase text-gold font-bold mt-1">
+              <span className="text-[7.5px] xs:text-[8px] sm:text-[9.5px] font-sans tracking-[0.22em] sm:tracking-[0.28em] uppercase text-gold font-bold mt-0.5 sm:mt-1">
                 Handcrafted Atelier
               </span>
             </div>
@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`group relative px-3 py-1.5 rounded-md text-xs lg:text-sm tracking-wider uppercase font-semibold transition-all duration-200 flex items-center gap-1.5 focus:outline-none ${
+                  className={`group relative px-2.5 lg:px-3 py-1.5 rounded-md text-xs lg:text-sm tracking-wider uppercase font-semibold transition-all duration-200 flex items-center gap-1.5 focus:outline-none ${
                     isActive
                       ? 'text-espresso font-bold'
                       : 'text-espresso/80 hover:text-gold hover:bg-champagne/25'
@@ -132,11 +132,11 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right Action Icons & WhatsApp Button */}
-          <div className="flex items-center space-x-2.5 sm:space-x-4">
-            {/* Search Trigger */}
+          <div className="flex items-center space-x-1 sm:space-x-4">
+            {/* Search Trigger (Touch friendly 44px min tap target) */}
             <button
               onClick={onOpenSearch}
-              className="p-2 text-espresso/75 hover:text-gold hover:bg-champagne/20 rounded-full transition-colors focus:outline-none"
+              className="p-2.5 sm:p-2 text-espresso/75 hover:text-gold hover:bg-champagne/20 rounded-full transition-colors focus:outline-none"
               aria-label="Search catalog"
               title="Search catalog"
             >
@@ -165,10 +165,10 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="lg:hidden">Inquire</span>
             </button>
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile Hamburger Toggle (44px min touch target) */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 text-espresso hover:text-gold rounded-md focus:outline-none"
+              className="md:hidden p-2 text-espresso hover:text-gold rounded-md focus:outline-none"
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileMenuOpen}
             >
@@ -189,20 +189,20 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Drawer Menu */}
       <div
-        className={`fixed top-0 right-0 w-4/5 max-w-sm h-full bg-cream shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+        className={`fixed top-0 right-0 w-4/5 max-w-sm h-full h-dvh max-h-dvh bg-cream shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="p-4 border-b border-champagne flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-full bg-warm-ivory border-2 border-gold/80 flex items-center justify-center overflow-hidden p-0.5 shadow-xs">
+            <div className="w-9 h-9 rounded-full bg-warm-ivory border-2 border-gold/80 flex items-center justify-center overflow-hidden p-0.5 shadow-xs">
               <img src={brandAssets.logo} alt="Naqsh-e-Noor" className="w-full h-full object-contain mix-blend-multiply scale-[1.18]" />
             </div>
             <span className="font-serif text-base font-bold uppercase tracking-wider text-espresso">Naqsh-e-Noor</span>
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="p-1.5 text-espresso/70 hover:text-espresso rounded focus:outline-none"
+            className="p-2 text-espresso/70 hover:text-espresso rounded focus:outline-none"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />

@@ -55,7 +55,7 @@ export const SearchDialog: React.FC<SearchDialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 p-4 sm:p-6 flex items-start justify-center bg-espresso-dark/70 backdrop-blur-sm animate-fade-in pt-20"
+      className="fixed inset-0 z-50 p-3 sm:p-6 flex items-start justify-center bg-espresso-dark/70 backdrop-blur-sm animate-fade-in pt-12 sm:pt-20"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

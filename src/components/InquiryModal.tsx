@@ -150,7 +150,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                     if (nameError) setNameError('');
                   }}
                   placeholder="e.g. Aanya Sharma"
-                  className={`w-full px-3.5 py-2.5 bg-warm-ivory/70 border rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:outline-none transition-colors ${
+                  className={`w-full px-3.5 py-2.5 bg-warm-ivory/70 border rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:outline-none transition-colors ${
                     nameError
                       ? 'border-rose-400 focus:border-rose-500'
                       : 'border-champagne focus:border-gold'
@@ -180,7 +180,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="e.g. +91 98765 43210"
-                  className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none"
                 />
               </div>
 
@@ -198,7 +198,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Share details such as preferred hoop size, color alterations, framing requests, or timeline..."
-                  className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none resize-none"
+                  className="w-full px-3.5 py-2.5 bg-warm-ivory/70 border border-champagne rounded-lg text-base sm:text-sm text-espresso placeholder:text-muted-brown/60 focus:border-gold focus:outline-none resize-none"
                 />
               </div>
 

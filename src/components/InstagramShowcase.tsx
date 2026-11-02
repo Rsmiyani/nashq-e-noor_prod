@@ -33,7 +33,7 @@ export const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ onSelectPr
         </div>
 
         {/* 6-Image Mosaic Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
           {instagramMosaic.map((item, idx) => (
             <div
               key={idx}
@@ -55,13 +55,19 @@ export const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ onSelectPr
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
               />
+              
+              {/* Mobile permanent touch badge (Since touch screens don't have hover) */}
+              <div className="sm:hidden absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-espresso-dark/80 text-champagne text-[8.5px] font-semibold tracking-wider uppercase backdrop-blur-xs">
+                {item.id}
+              </div>
+
               {/* Hover overlay with Instagram icon & design ID */}
               <div className="absolute inset-0 bg-espresso-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 text-center text-warm-ivory">
-                <Instagram className="w-6 h-6 text-gold mb-1.5" />
-                <span className="text-[11px] font-semibold tracking-wider uppercase text-champagne">
+                <Instagram className="w-5 h-5 sm:w-6 sm:h-6 text-gold mb-1 sm:mb-1.5" />
+                <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-champagne">
                   {item.id}
                 </span>
-                <span className="text-[10px] text-warm-ivory/80 font-serif italic truncate max-w-[90%]">
+                <span className="text-[9.5px] sm:text-[10px] text-warm-ivory/80 font-serif italic truncate max-w-[90%]">
                   {item.name}
                 </span>
               </div>
@@ -70,12 +76,12 @@ export const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ onSelectPr
         </div>
 
         {/* Instagram CTA Button */}
-        <div className="mt-12 text-center">
+        <div className="mt-8 sm:mt-12 text-center">
           <a
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-espresso hover:bg-espresso-dark text-warm-ivory text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-lg border border-champagne hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg group"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-espresso hover:bg-espresso-dark text-warm-ivory text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-lg border border-champagne hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg group"
           >
             <Instagram className="w-4 h-4 text-gold group-hover:scale-110 transition-transform" />
             <span>Follow {INSTAGRAM_HANDLE}</span>

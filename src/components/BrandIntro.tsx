@@ -17,7 +17,7 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onExploreClick }) => {
           
           {/* Left Column: Text & Editorial Statement */}
           <div className="lg:col-span-7 space-y-3 sm:space-y-3.5 text-center lg:text-left">
-            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-espresso leading-tight">
+            <h2 className="font-serif text-2xl xs:text-3xl sm:text-4xl font-semibold text-espresso leading-tight">
               Welcome to <span className="font-bold italic text-gold">Naqsh-e-Noor</span>
             </h2>
 
@@ -94,7 +94,7 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onExploreClick }) => {
                 <img
                   src={brandAssets.detail}
                   alt="Naqsh-e-Noor Handcrafted Embroidery Detail"
-                  className="w-full h-[220px] sm:h-[280px] lg:h-[330px] object-cover object-center"
+                  className="w-full h-[200px] xs:h-[240px] sm:h-[280px] lg:h-[330px] object-cover object-center"
                   loading="lazy"
                 />
                 

@@ -119,7 +119,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
   return (
     <section
       id="hero"
-      className="relative h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] min-h-[520px] max-h-[850px] bg-espresso-dark overflow-hidden flex items-center select-none"
+      className="relative h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] min-h-[480px] sm:min-h-[540px] max-h-[850px] bg-espresso-dark overflow-hidden flex items-center select-none"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       aria-label="Naqsh-e-Noor Featured Hero Slider"
@@ -195,7 +195,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                 </p>
 
                 {/* Large Bold Editorial Headline - Staggered lines */}
-                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] font-bold tracking-tight text-warm-ivory leading-[1.1] mb-3.5">
+                <h1 className="font-serif text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] font-bold tracking-tight text-warm-ivory leading-[1.15] sm:leading-[1.1] mb-2.5 sm:mb-3.5">
                   <span
                     className={`block text-warm-ivory transition-all duration-700 ease-out ${
                       isCurrent
@@ -218,7 +218,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
 
                 {/* Refined Description */}
                 <p
-                  className={`text-xs sm:text-sm lg:text-base text-warm-ivory/90 font-medium leading-relaxed mb-6 max-w-lg transition-all duration-700 ease-out ${
+                  className={`text-xs sm:text-sm lg:text-base text-warm-ivory/90 font-medium leading-relaxed mb-4 sm:mb-6 max-w-lg transition-all duration-700 ease-out ${
                     isCurrent
                       ? 'opacity-100 translate-y-0 delay-[500ms]'
                       : 'opacity-0 translate-y-3'
@@ -229,7 +229,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
 
                 {/* Dual Action Buttons */}
                 <div
-                  className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-3 transition-all duration-700 ease-out ${
+                  className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 transition-all duration-700 ease-out ${
                     isCurrent
                       ? 'opacity-100 translate-y-0 delay-[600ms]'
                       : 'opacity-0 translate-y-3'
@@ -238,7 +238,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                   {/* Primary Action Button */}
                   <button
                     onClick={onExploreCollections}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gold hover:bg-gold-dark text-warm-ivory text-xs sm:text-sm font-semibold tracking-wider uppercase rounded transition-all duration-200 shadow-lg hover:shadow-xl hover:translate-y-[-1px] group focus:outline-none"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-gold hover:bg-gold-dark text-warm-ivory text-xs sm:text-sm font-semibold tracking-wider uppercase rounded transition-all duration-200 shadow-lg hover:shadow-xl hover:translate-y-[-1px] group focus:outline-none"
                   >
                     <span>{slide.ctaText}</span>
                     <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -247,7 +247,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                   {/* Secondary Action Button */}
                   <button
                     onClick={onInquireWhatsApp}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-espresso/70 hover:bg-espresso text-champagne hover:text-warm-ivory text-xs sm:text-sm font-medium tracking-wider uppercase rounded border border-champagne/40 hover:border-gold transition-all duration-200 backdrop-blur-sm focus:outline-none"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-espresso/70 hover:bg-espresso text-champagne hover:text-warm-ivory text-xs sm:text-sm font-medium tracking-wider uppercase rounded border border-champagne/40 hover:border-gold transition-all duration-200 backdrop-blur-sm focus:outline-none"
                   >
                     <MessageCircle className="w-4 h-4 text-gold" />
                     <span>Inquire on WhatsApp</span>
@@ -255,18 +255,18 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                 </div>
 
                 {/* Minimalist In-Column Slide Indicators (Clickable, expands gold active dash) */}
-                <div className="flex items-center gap-2 pt-5">
+                <div className="flex items-center gap-2 pt-3 sm:pt-5">
                   {slides.map((_, dotIdx) => {
                     const isDotActive = dotIdx === currentSlide;
                     return (
                       <button
                         key={dotIdx}
                         onClick={() => setCurrentSlide(dotIdx)}
-                        className="group py-2 focus:outline-none"
+                        className="group py-3 px-1 focus:outline-none"
                         aria-label={`Switch to hero slide ${dotIdx + 1}`}
                       >
                         <div
-                          className={`h-1 rounded-full transition-all duration-500 ${
+                          className={`h-1.5 sm:h-1 rounded-full transition-all duration-500 ${
                             isDotActive
                               ? 'w-8 bg-gold'
                               : 'w-2 bg-champagne/40 group-hover:bg-champagne/80 group-hover:w-4'
