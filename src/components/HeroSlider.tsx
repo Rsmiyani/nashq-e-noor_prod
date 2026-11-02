@@ -119,7 +119,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
   return (
     <section
       id="hero"
-      className="relative h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] min-h-[480px] sm:min-h-[540px] max-h-[850px] bg-espresso-dark overflow-hidden flex items-center select-none"
+      className="relative h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] min-h-[480px] sm:min-h-[540px] max-h-[850px] bg-espresso-dark overflow-hidden flex items-center select-none touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       aria-label="Naqsh-e-Noor Featured Hero Slider"

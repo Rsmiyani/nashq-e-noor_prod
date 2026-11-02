@@ -189,9 +189,12 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Drawer Menu */}
       <div
-        className={`fixed top-0 right-0 w-4/5 max-w-sm h-full h-dvh max-h-dvh bg-cream shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
-          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 w-4/5 max-w-sm h-full h-dvh max-h-dvh bg-cream shadow-2xl z-50 transform transition-all duration-300 ease-in-out md:hidden flex flex-col ${
+          mobileMenuOpen
+            ? 'translate-x-0 opacity-100 visible pointer-events-auto'
+            : 'translate-x-full opacity-0 invisible pointer-events-none'
         }`}
+        aria-hidden={!mobileMenuOpen}
       >
         <div className="p-4 border-b border-champagne flex items-center justify-between">
           <div className="flex items-center gap-2.5">
