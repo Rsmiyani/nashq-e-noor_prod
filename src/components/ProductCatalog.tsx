@@ -1,0 +1,268 @@
+import React, { useState, useMemo } from 'react';
+import { Search, X, SlidersHorizontal, Sparkles, RefreshCw } from 'lucide-react';
+import { allProducts, Product, CategoryKey } from '../data/products';
+import { ProductCard } from './ProductCard';
+
+interface ProductCatalogProps {
+  selectedCategory: CategoryKey;
+  onSelectCategory: (cat: CategoryKey) => void;
+  onViewProduct: (product: Product) => void;
+  onInquireProduct: (product: Product) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+}
+
+export const ProductCatalog: React.FC<ProductCatalogProps> = ({
+  selectedCategory,
+  onSelectCategory,
+  onViewProduct,
+  onInquireProduct,
+  searchQuery,
+  onSearchChange,
+}) => {
+  const [sortBy, setSortBy] = useState<'default' | 'id-asc' | 'id-desc'>('default');
+  const [visibleCount, setVisibleCount] = useState<number>(24);
+
+  // Category filters with dynamic counts
+  const categoryFilters: { key: CategoryKey; label: string; count: number }[] = [
+    { key: 'all', label: 'All Designs', count: allProducts.length },
+    { key: 'bridal', label: 'Bridal', count: allProducts.filter((p) => p.category === 'bridal').length },
+    { key: 'embroidery', label: 'Embroidery', count: allProducts.filter((p) => p.category === 'embroidery').length },
+    { key: 'floral', label: 'Floral', count: allProducts.filter((p) => p.category === 'floral').length },
+    { key: 'hoop', label: 'Hoop Art', count: allProducts.filter((p) => p.category === 'hoop').length },
+    { key: 'hues', label: 'Hues', count: allProducts.filter((p) => p.category === 'hues').length },
+  ];
+
+  // Filtered and sorted products
+  const filteredProducts = useMemo(() => {
+    let result = allProducts;
+
+    // Filter by Category
+    if (selectedCategory !== 'all') {
+      result = result.filter((p) => p.category === selectedCategory);
+    }
+
+    // Filter by Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (p) =>
+          p.id.toLowerCase().includes(q) ||
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.sourceFile.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q)
+      );
+    }
+
+    // Sorting
+    if (sortBy === 'id-asc') {
+      result = [...result].sort((a, b) => a.id.localeCompare(b.id));
+    } else if (sortBy === 'id-desc') {
+      result = [...result].sort((a, b) => b.id.localeCompare(a.id));
+    }
+
+    return result;
+  }, [selectedCategory, searchQuery, sortBy]);
+
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
+
+  const handleClearFilters = () => {
+    onSelectCategory('all');
+    onSearchChange('');
+    setVisibleCount(24);
+  };
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + 24, filteredProducts.length));
+  };
+
+  const handleShowAll = () => {
+    setVisibleCount(filteredProducts.length);
+  };
+
+  return (
+    <section id="catalog" className="py-20 sm:py-28 bg-warm-ivory">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Heading */}
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-champagne text-xs font-bold uppercase tracking-widest text-espresso mb-3">
+            <Sparkles className="w-3 h-3 text-gold" />
+            <span>Complete Collection Archive</span>
+          </div>
+          <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
+            The Complete <span className="font-bold italic text-gold">Catalog</span>
+          </h2>
+          <div className="w-16 h-px bg-gold mx-auto my-3" />
+          <p className="text-sm sm:text-base text-espresso/80 font-medium">
+            Browse our full repertoire of {allProducts.length} handcrafted creations. Inquire directly about any piece on WhatsApp.
+          </p>
+        </div>
+
+        {/* Filter and Search Bar Controls */}
+        <div className="bg-cream p-4 sm:p-6 rounded-xl border border-champagne/80 shadow-sm mb-10 space-y-4">
+          
+          {/* Top row: Search and Sort */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-espresso/50 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  onSearchChange(e.target.value);
+                  setVisibleCount(24);
+                }}
+                placeholder="Search by ID (e.g. BRD-001) or collection..."
+                className="w-full pl-10 pr-9 py-2.5 bg-warm-ivory/60 border border-champagne rounded-lg text-sm text-espresso placeholder:text-muted-brown/60 focus:bg-warm-ivory focus:border-gold focus:outline-none transition-colors"
+                aria-label="Search catalog"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-espresso/50 hover:text-espresso p-0.5"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Sort Selector */}
+            <div className="flex items-center gap-2 justify-end">
+              <span className="text-xs uppercase tracking-wider text-muted-brown font-medium flex items-center gap-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                Sort:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="py-2 px-3 bg-warm-ivory/80 border border-champagne rounded-lg text-xs font-medium text-espresso focus:outline-none focus:border-gold"
+                aria-label="Sort products"
+              >
+                <option value="default">Curated Selection</option>
+                <option value="id-asc">Product ID (Ascending)</option>
+                <option value="id-desc">Product ID (Descending)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Bottom row: Category Filter Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-2 scrollbar-none" role="tablist" aria-label="Category filters">
+            {categoryFilters.map((tab) => {
+              const isActive = selectedCategory === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    onSelectCategory(tab.key);
+                    setVisibleCount(24);
+                  }}
+                  className={`whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-200 flex items-center gap-2 focus:outline-none ${
+                    isActive
+                      ? 'bg-gold text-warm-ivory shadow-sm'
+                      : 'bg-warm-ivory hover:bg-champagne/40 text-espresso/80 border border-champagne/60'
+                  }`}
+                  role="tab"
+                  aria-selected={isActive}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive ? 'bg-warm-ivory/25 text-warm-ivory' : 'bg-champagne/60 text-espresso/70'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Filter Status & Active Search Indicators */}
+          {(searchQuery || selectedCategory !== 'all') && (
+            <div className="flex items-center justify-between pt-2 border-t border-champagne/40 text-xs text-muted-brown">
+              <div className="flex items-center gap-2">
+                <span>Showing {filteredProducts.length} matching pieces</span>
+                {searchQuery && (
+                  <span className="px-2 py-0.5 rounded bg-champagne text-espresso font-medium">
+                    Search: "{searchQuery}"
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={handleClearFilters}
+                className="text-gold hover:text-gold-dark font-medium underline inline-flex items-center gap-1"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Reset Filters</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Product Grid */}
+        {filteredProducts.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+              {displayedProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onViewDetails={onViewProduct}
+                  onQuickInquire={onInquireProduct}
+                />
+              ))}
+            </div>
+
+            {/* Pagination / Load More Controls */}
+            {visibleCount < filteredProducts.length && (
+              <div className="mt-14 text-center space-y-4">
+                <p className="text-xs text-muted-brown">
+                  Showing <span className="font-bold text-espresso">{visibleCount}</span> of{' '}
+                  <span className="font-bold text-espresso">{filteredProducts.length}</span> handcrafted creations
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    onClick={handleLoadMore}
+                    className="px-6 py-3 bg-champagne hover:bg-gold text-espresso hover:text-warm-ivory text-xs sm:text-sm font-semibold tracking-wider uppercase rounded transition-colors shadow-sm focus:outline-none"
+                  >
+                    Load Next 24 Designs
+                  </button>
+                  <button
+                    onClick={handleShowAll}
+                    className="px-5 py-3 bg-transparent hover:bg-champagne/30 text-espresso text-xs sm:text-sm font-semibold tracking-wider uppercase rounded border border-champagne transition-colors focus:outline-none"
+                  >
+                    Show All ({filteredProducts.length})
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Empty Search State */
+          <div className="text-center py-16 bg-cream rounded-xl border border-champagne/70 p-8">
+            <p className="font-serif text-2xl text-espresso mb-2">No creations found</p>
+            <p className="text-sm text-muted-brown max-w-md mx-auto mb-6">
+              We couldn't find any designs matching "{searchQuery}". Try searching for product identifiers like{' '}
+              <span className="font-mono font-medium text-espresso">BRD-001</span>, or browse by collection.
+            </p>
+            <button
+              onClick={handleClearFilters}
+              className="px-5 py-2.5 bg-gold hover:bg-gold-dark text-warm-ivory text-xs uppercase tracking-wider font-semibold rounded shadow-sm focus:outline-none"
+            >
+              Reset Filters &amp; View All
+            </button>
+          </div>
+        )}
+
+      </div>
+    </section>
+  );
+};
+
