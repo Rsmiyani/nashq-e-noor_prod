@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, X, SlidersHorizontal, RefreshCw } from 'lucide-react';
+import { Search, X, SlidersHorizontal, RefreshCw, Shuffle, Sparkles } from 'lucide-react';
 import { allProducts, Product, CategoryKey } from '../data/products';
 import { ProductCard } from './ProductCard';
 
@@ -22,19 +22,52 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
 }) => {
   const [sortBy, setSortBy] = useState<'default' | 'id-asc' | 'id-desc'>('default');
   const [visibleCount, setVisibleCount] = useState<number>(24);
+  const [showAllInAllTab, setShowAllInAllTab] = useState<boolean>(false);
+  const [shuffleSeed, setShuffleSeed] = useState<number>(0);
 
-  // Category filters with dynamic counts
-  const categoryFilters: { key: CategoryKey; label: string; count: number }[] = [
-    { key: 'all', label: 'All Designs', count: allProducts.length },
-    { key: 'bridal', label: 'Bridal', count: allProducts.filter((p) => p.category === 'bridal').length },
-    { key: 'embroidery', label: 'Embroidery', count: allProducts.filter((p) => p.category === 'embroidery').length },
-    { key: 'floral', label: 'Floral', count: allProducts.filter((p) => p.category === 'floral').length },
-    { key: 'hoop', label: 'Hoop Art', count: allProducts.filter((p) => p.category === 'hoop').length },
-    { key: 'hues', label: 'Hues', count: allProducts.filter((p) => p.category === 'hues').length },
-  ];
+  // Check if we are in curated random preview mode for "All Designs"
+  const isCuratedAllMode = selectedCategory === 'all' && !searchQuery.trim() && !showAllInAllTab;
+
+  // Stable curated random selection across all categories (12 pieces: balanced representation across all 5 categories)
+  const curatedRandomProducts = useMemo(() => {
+    const categories: CategoryKey[] = ['bridal', 'embroidery', 'floral', 'hoop', 'hues'];
+    const poolByCategory: Record<string, Product[]> = {};
+
+    categories.forEach((cat) => {
+      poolByCategory[cat] = [...allProducts.filter((p) => p.category === cat)].sort(() => Math.random() - 0.5);
+    });
+
+    const selected: Product[] = [];
+    let catIndex = 0;
+
+    // Round-robin selection across all 5 categories up to 12 items (guarantees every category is represented)
+    while (selected.length < 12) {
+      const cat = categories[catIndex % categories.length];
+      const pool = poolByCategory[cat];
+      if (pool && pool.length > 0) {
+        selected.push(pool.pop()!);
+      }
+      catIndex++;
+      if (Object.values(poolByCategory).every((p) => p.length === 0)) break;
+    }
+
+    // Interleave and randomize the final display order
+    return selected.sort(() => Math.random() - 0.5);
+  }, [shuffleSeed]);
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
+    // If in Curated "All Designs" mode without search
+    if (isCuratedAllMode) {
+      let result = [...curatedRandomProducts];
+      if (sortBy === 'id-asc') {
+        result.sort((a, b) => a.id.localeCompare(b.id));
+      } else if (sortBy === 'id-desc') {
+        result.sort((a, b) => b.id.localeCompare(a.id));
+      }
+      return result;
+    }
+
     let result = allProducts;
 
     // Filter by Category
@@ -63,15 +96,33 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
     }
 
     return result;
-  }, [selectedCategory, searchQuery, sortBy]);
+  }, [selectedCategory, searchQuery, sortBy, isCuratedAllMode, curatedRandomProducts]);
 
   const displayedProducts = useMemo(() => {
+    if (isCuratedAllMode) {
+      return filteredProducts;
+    }
     return filteredProducts.slice(0, visibleCount);
-  }, [filteredProducts, visibleCount]);
+  }, [filteredProducts, visibleCount, isCuratedAllMode]);
+
+  // Category filters with dynamic counts
+  const categoryFilters: { key: CategoryKey; label: string; count: number }[] = [
+    {
+      key: 'all',
+      label: 'All Designs',
+      count: isCuratedAllMode ? 12 : (searchQuery.trim() ? filteredProducts.length : allProducts.length),
+    },
+    { key: 'bridal', label: 'Bridal', count: allProducts.filter((p) => p.category === 'bridal').length },
+    { key: 'embroidery', label: 'Embroidery', count: allProducts.filter((p) => p.category === 'embroidery').length },
+    { key: 'floral', label: 'Floral', count: allProducts.filter((p) => p.category === 'floral').length },
+    { key: 'hoop', label: 'Hoop Art', count: allProducts.filter((p) => p.category === 'hoop').length },
+    { key: 'hues', label: 'Hues', count: allProducts.filter((p) => p.category === 'hues').length },
+  ];
 
   const handleClearFilters = () => {
     onSelectCategory('all');
     onSearchChange('');
+    setShowAllInAllTab(false);
     setVisibleCount(24);
   };
 
@@ -94,7 +145,21 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
           </h2>
           <div className="w-16 h-px bg-gold mx-auto my-3" />
           <p className="text-sm sm:text-base text-espresso/80 font-medium">
-            Browse our full repertoire of {allProducts.length} handcrafted creations. Inquire directly about any piece on WhatsApp.
+            {isCuratedAllMode
+              ? 'A curated cross-category spotlight across our collections. Select any collection tab below to explore full archives.'
+              : selectedCategory === 'all'
+              ? `Browse our full archive of ${allProducts.length} handcrafted creations. Inquire directly about any piece on WhatsApp.`
+              : `Explore our collection of handcrafted ${
+                  selectedCategory === 'bridal'
+                    ? 'bridal heirlooms'
+                    : selectedCategory === 'embroidery'
+                    ? 'embroidery artistry'
+                    : selectedCategory === 'floral'
+                    ? 'floral botanicals'
+                    : selectedCategory === 'hoop'
+                    ? 'artisan hoop frames'
+                    : 'tonal hue compositions'
+                }. Inquire directly on WhatsApp.`}
           </p>
         </div>
 
@@ -129,8 +194,19 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               )}
             </div>
 
-            {/* Sort Selector */}
-            <div className="flex items-center gap-2 justify-end">
+            {/* Sort & Shuffle Controls */}
+            <div className="flex items-center gap-2.5 justify-end">
+              {isCuratedAllMode && (
+                <button
+                  onClick={() => setShuffleSeed((s) => s + 1)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-warm-ivory border border-champagne hover:border-gold hover:text-gold text-espresso text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors shadow-xs"
+                  title="Shuffle random creations across all categories"
+                >
+                  <Shuffle className="w-3.5 h-3.5 text-gold" />
+                  <span className="hidden sm:inline">Shuffle Mix</span>
+                </button>
+              )}
+
               <span className="text-xs uppercase tracking-wider text-muted-brown font-medium flex items-center gap-1.5">
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 Sort:
@@ -157,6 +233,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   key={tab.key}
                   onClick={() => {
                     onSelectCategory(tab.key);
+                    setShowAllInAllTab(false);
                     setVisibleCount(24);
                   }}
                   className={`whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-200 flex items-center gap-2 focus:outline-none ${
@@ -216,8 +293,36 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               ))}
             </div>
 
-            {/* Pagination / Load More Controls */}
-            {visibleCount < filteredProducts.length && (
+            {/* Curated Cross-Category Mode Footer */}
+            {isCuratedAllMode && (
+              <div className="mt-12 text-center space-y-4 bg-cream/70 rounded-2xl border border-champagne/80 p-6 sm:p-8 max-w-2xl mx-auto shadow-xs">
+                <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold font-bold">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Curated Cross-Category Selection</span>
+                </div>
+                <p className="text-sm text-espresso/80 font-medium max-w-md mx-auto">
+                  Showing 12 pieces randomly selected across Bridal, Embroidery, Floral, Hoops &amp; Hues. Select any collection tab above to explore full archives.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => setShuffleSeed((s) => s + 1)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold tracking-wider uppercase rounded-lg transition-colors shadow-sm focus:outline-none"
+                  >
+                    <Shuffle className="w-3.5 h-3.5" />
+                    <span>Shuffle Selection</span>
+                  </button>
+                  <button
+                    onClick={() => setShowAllInAllTab(true)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-warm-ivory hover:bg-champagne/40 text-espresso text-xs font-semibold tracking-wider uppercase rounded-lg border border-champagne transition-colors focus:outline-none"
+                  >
+                    <span>View Full Archive ({allProducts.length} Designs)</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Standard Pagination Controls for specific categories or expanded archive view */}
+            {!isCuratedAllMode && visibleCount < filteredProducts.length && (
               <div className="mt-14 text-center space-y-4">
                 <p className="text-xs text-muted-brown">
                   Showing <span className="font-bold text-espresso">{visibleCount}</span> of{' '}
@@ -237,6 +342,35 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                     Show All ({filteredProducts.length})
                   </button>
                 </div>
+
+                {showAllInAllTab && selectedCategory === 'all' && (
+                  <div className="pt-2">
+                    <button
+                      onClick={() => {
+                        setShowAllInAllTab(false);
+                        setVisibleCount(24);
+                      }}
+                      className="text-xs text-gold hover:text-gold-dark font-semibold tracking-wider uppercase underline"
+                    >
+                      ← Back to Curated Selection (12 Pieces)
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* When all items in full archive are shown, give option to return to curated if in 'all' */}
+            {!isCuratedAllMode && visibleCount >= filteredProducts.length && showAllInAllTab && selectedCategory === 'all' && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => {
+                    setShowAllInAllTab(false);
+                    setVisibleCount(24);
+                  }}
+                  className="text-xs text-gold hover:text-gold-dark font-semibold tracking-wider uppercase underline"
+                >
+                  ← Back to Curated Selection (12 Pieces)
+                </button>
               </div>
             )}
           </>
