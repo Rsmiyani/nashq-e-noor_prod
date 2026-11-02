@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+  import { createClient } from '@supabase/supabase-js';
 import { Product } from '../data/products';
 
 // Read from Vite env or localStorage override if admin entered them in the browser

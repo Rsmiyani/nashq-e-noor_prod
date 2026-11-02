@@ -21,7 +21,7 @@ import {
   ExternalLink,
   SlidersHorizontal,
 } from 'lucide-react';
-import { Product, allProducts as localProducts, brandAssets } from '../../data/products';
+import { Product, brandAssets } from '../../data/products';
 import {
   supabase,
   checkDatabaseHealth,
@@ -49,7 +49,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   const [authError, setAuthError] = useState<string>('');
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'products' | 'pricing' | 'categories' | 'migration' | 'setup'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'pricing' | 'categories' | 'setup'>('products');
 
   // Database Data
   const [products, setProducts] = useState<Product[]>([]);
@@ -94,14 +94,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   // Quick Price Saving State
   const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
   const [quickPriceMap, setQuickPriceMap] = useState<Record<string, string>>({});
-
-  // Migration Progress
-  const [migrationRunning, setMigrationRunning] = useState<boolean>(false);
-  const [migrationProgress, setMigrationProgress] = useState<{ current: number; total: number; message: string }>({
-    current: 0,
-    total: localProducts.length,
-    message: '',
-  });
 
   const configuredPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
 
@@ -288,75 +280,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       refreshData();
     } catch (err: any) {
       showStatus('Error adding category: ' + err.message, 'error');
-    }
-  };
-
-  // One-Click Migration of 118 Local Items to Supabase
-  const handleRunMigration = async () => {
-    if (!window.confirm('Transfer all 118 catalog products to Supabase? This will convert photos to Base64 and insert them with empty price fields.')) return;
-
-    setMigrationRunning(true);
-    setMigrationProgress({ current: 0, total: localProducts.length, message: 'Seeding default categories...' });
-
-    try {
-      // 1. Seed categories
-      const defaultCategories: DBCategory[] = [
-        { id: 'bridal', label: 'Bridal', description: 'Opulent handcrafted bridal embroidery' },
-        { id: 'embroidery', label: 'Embroidery', description: 'Masterpieces of generational needlework' },
-        { id: 'floral', label: 'Floral', description: 'Lush botanicals and garden tapestries' },
-        { id: 'hoop', label: 'Hoop Art', description: 'Artisan circular embroidery hoop frames' },
-        { id: 'hues', label: 'Hues', description: 'Tonal gradients & chromatic silk blends' },
-      ];
-
-      for (const cat of defaultCategories) {
-        await upsertCategory(cat);
-      }
-
-      // 2. Transfer products sequentially with Base64 conversion
-      for (let i = 0; i < localProducts.length; i++) {
-        const item = localProducts[i];
-        setMigrationProgress({
-          current: i + 1,
-          total: localProducts.length,
-          message: `Converting & uploading ${item.id} (${i + 1}/${localProducts.length})...`,
-        });
-
-        // Convert Vite asset URL to Base64
-        let base64Image = item.image;
-        if (!base64Image.startsWith('data:image')) {
-          try {
-            base64Image = await convertUrlToBase64(item.image);
-          } catch (e) {
-            console.warn(`Could not convert image for ${item.id}, storing asset path:`, e);
-          }
-        }
-
-        // Insert into Supabase with empty price as requested!
-        await upsertProduct({
-          id: item.id,
-          name: item.name,
-          category: item.category,
-          categoryLabel: item.categoryLabel,
-          image: base64Image,
-          sourceFile: item.sourceFile,
-          description: item.description,
-          price: '', // Empty price section as requested so admin can write later
-          tags: item.tags,
-          featured: !!item.featured,
-        });
-      }
-
-      setMigrationProgress({
-        current: localProducts.length,
-        total: localProducts.length,
-        message: 'Migration complete! All 118 items transferred to Supabase.',
-      });
-      showStatus('All 118 catalog pieces successfully migrated to Supabase!', 'success');
-      refreshData();
-    } catch (err: any) {
-      showStatus('Migration halted: ' + err.message, 'error');
-    } finally {
-      setMigrationRunning(false);
     }
   };
 
@@ -698,18 +621,6 @@ CREATE POLICY "Admin write products" ON products FOR ALL USING (true);`;
           </button>
 
           <button
-            onClick={() => setActiveTab('migration')}
-            className={`px-4 py-2.5 rounded-t-lg text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'migration'
-                ? 'bg-cream text-espresso border-t-2 border-gold font-bold'
-                : 'text-muted-brown hover:text-espresso'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-gold" />
-            <span>One-Click Migration</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('setup')}
             className={`px-4 py-2.5 rounded-t-lg text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 whitespace-nowrap ml-auto ${
               activeTab === 'setup'
@@ -819,16 +730,16 @@ CREATE POLICY "Admin write products" ON products FOR ALL USING (true);`;
                 <h3 className="font-serif text-lg font-bold text-espresso">No Products in Database</h3>
                 <p className="text-xs text-muted-brown max-w-md mx-auto">
                   {products.length === 0
-                    ? 'Your Supabase database does not have products yet. Use the One-Click Migration tab to transfer your 118 catalog pieces in seconds!'
+                    ? 'No products found in the database. Click below to add your first creation!'
                     : 'No products match your active search filters.'}
                 </p>
                 {products.length === 0 && (
                   <button
-                    onClick={() => setActiveTab('migration')}
+                    onClick={handleOpenAddModal}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold uppercase tracking-wider rounded-lg shadow-sm"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Go to One-Click Migration</span>
+                    <Plus className="w-4 h-4" />
+                    <span>Add First Creation</span>
                   </button>
                 )}
               </div>
@@ -1010,56 +921,7 @@ CREATE POLICY "Admin write products" ON products FOR ALL USING (true);`;
           </div>
         )}
 
-        {/* TAB 4: ONE-CLICK DATA MIGRATION */}
-        {activeTab === 'migration' && (
-          <div className="max-w-2xl mx-auto bg-cream p-6 sm:p-8 rounded-2xl border border-champagne shadow-luxury space-y-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-champagne/60 text-gold flex items-center justify-center mx-auto">
-              <Sparkles className="w-7 h-7" />
-            </div>
-
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-espresso">Transfer 118 Creations to Supabase</h2>
-              <p className="text-xs sm:text-sm text-muted-brown mt-2 leading-relaxed max-w-lg mx-auto">
-                This tool reads all 118 static catalog images, converts each photograph into an optimized Base64
-                data URL, leaves the price field empty (so you can write prices in the admin table), and stores
-                them in your Supabase database.
-              </p>
-            </div>
-
-            {/* Migration Progress Bar */}
-            {migrationRunning && (
-              <div className="space-y-2 text-left">
-                <div className="flex justify-between text-xs font-semibold text-espresso">
-                  <span>{migrationProgress.message}</span>
-                  <span>
-                    {Math.round((migrationProgress.current / migrationProgress.total) * 100)}%
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-warm-ivory rounded-full overflow-hidden border border-champagne">
-                  <div
-                    className="h-full bg-gold transition-all duration-300"
-                    style={{ width: `${(migrationProgress.current / migrationProgress.total) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={handleRunMigration}
-              disabled={migrationRunning}
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-gold hover:bg-gold-dark text-warm-ivory text-xs sm:text-sm font-semibold uppercase tracking-wider rounded-lg shadow-md transition-colors disabled:opacity-50"
-            >
-              <Database className="w-4 h-4" />
-              <span>{migrationRunning ? 'Migrating Creations...' : 'Start Migration to Supabase'}</span>
-            </button>
-
-            <p className="text-[11px] text-muted-brown">
-              Safe to run anytime. Existing items with the same ID will be seamlessly updated without duplicates.
-            </p>
-          </div>
-        )}
-
-        {/* TAB 5: SQL SETUP */}
+        {/* TAB 4: SQL SETUP */}
         {activeTab === 'setup' && (
           <div className="bg-cream p-6 sm:p-8 rounded-2xl border border-champagne space-y-4">
             <div className="flex items-center justify-between">
