@@ -177,3 +177,4 @@ export async function setCachedCategories(categories: DBCategory[]): Promise<voi
     console.warn('[Cache] Could not save categories to IndexedDB:', err);
   }
 }
+

@@ -472,9 +472,9 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
   ];
 
   return (
-    <div className="min-h-screen bg-warm-ivory text-espresso flex font-sans antialiased overflow-x-hidden">
+    <div className="fixed inset-0 overflow-hidden bg-warm-ivory text-espresso flex font-sans antialiased">
       {/* ============================================================== */}
-      {/* 1. LEFT SIDEBAR (Desktop Sticky + Mobile Drawer)              */}
+      {/* 1. LEFT SIDEBAR (Fixed Viewport Height - Never Scrolls Away)   */}
       {/* ============================================================== */}
       
       {/* Mobile Backdrop */}
@@ -486,14 +486,14 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-espresso-dark text-warm-ivory flex flex-col border-r border-champagne/15 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen lg:sticky lg:top-0 shrink-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 h-full bg-espresso-dark text-warm-ivory flex flex-col justify-between border-r border-champagne/15 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-full shrink-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="p-6 border-b border-champagne/15 flex items-center justify-between">
+        <div className="p-5 sm:p-6 border-b border-champagne/15 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-warm-ivory/10 border border-gold/40 flex items-center justify-center p-1 overflow-hidden shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-warm-ivory/10 border border-gold/40 flex items-center justify-center p-1 overflow-hidden shadow-xs shrink-0">
               <img src={brandAssets.logo} alt="Logo" className="w-full h-full object-contain filter invert opacity-90" />
             </div>
             <div>
@@ -516,7 +516,7 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
         </div>
 
         {/* Navigation Menu */}
-        <div className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-none">
+        <div className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto scrollbar-none">
           <div className="px-3 pb-2 text-[10px] uppercase font-bold tracking-widest text-champagne/50">
             Workspace
           </div>
@@ -558,7 +558,7 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
         </div>
 
         {/* Sidebar Footer: Storefront & Sign Out */}
-        <div className="p-4 border-t border-champagne/15 space-y-1 bg-espresso-dark/80">
+        <div className="p-4 border-t border-champagne/15 space-y-1 bg-espresso-dark/80 shrink-0">
           <button
             onClick={onExit}
             className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-champagne/80 hover:text-warm-ivory hover:bg-warm-ivory/10 transition-colors uppercase tracking-wider"
@@ -578,12 +578,12 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
       </aside>
 
       {/* ============================================================== */}
-      {/* 2. MAIN WORKSPACE (Top Bar + Stat Cards + Active Content)      */}
+      {/* 2. MAIN WORKSPACE (Locked Full Height, Top Bar Pinned)         */}
       {/* ============================================================== */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+      <div className="flex-1 h-full flex flex-col min-w-0 overflow-hidden bg-warm-ivory">
         
-        {/* Top Navbar */}
-        <header className="sticky top-0 z-30 bg-cream/90 backdrop-blur-md border-b border-champagne/60 px-4 sm:px-8 py-4 flex items-center justify-between gap-4">
+        {/* Pinned Top Navbar */}
+        <header className="shrink-0 z-30 bg-cream/95 backdrop-blur-md border-b border-champagne/60 px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* Mobile Hamburger Toggle */}
             <button
