@@ -6,6 +6,9 @@ import tealUrl from '../../assets/teal.webp';
 import heroSlide1Url from '../../assets/hero-slide-1-artisan.jpg';
 import heroSlide2Url from '../../assets/hero-slide-2-bridal.jpg';
 import heroSlide3Url from '../../assets/hero-slide-3-floral.jpg';
+import heroSlide1MobileUrl from '../../assets/hero-slide-1-mobile.jpg';
+import heroSlide2MobileUrl from '../../assets/hero-slide-2-mobile.jpg';
+import heroSlide3MobileUrl from '../../assets/hero-slide-3-mobile.jpg';
 
 export type CategoryKey = string;
 
@@ -42,6 +45,9 @@ export const brandAssets = {
   heroSlide1: heroSlide1Url,
   heroSlide2: heroSlide2Url,
   heroSlide3: heroSlide3Url,
+  heroSlide1Mobile: heroSlide1MobileUrl,
+  heroSlide2Mobile: heroSlide2MobileUrl,
+  heroSlide3Mobile: heroSlide3MobileUrl,
 };
 
 // Import all category images eagerly via Vite glob
