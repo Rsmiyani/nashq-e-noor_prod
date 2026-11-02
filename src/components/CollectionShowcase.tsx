@@ -132,11 +132,11 @@ export const CollectionShowcase: React.FC<CollectionShowcaseProps> = ({
   }, []);
 
   return (
-    <section id="collections" className="pt-8 sm:pt-12 pb-16 sm:pb-20 bg-champagne-light/50 border-y border-champagne/40">
+    <section id="collections" className="pt-8 sm:pt-10 pb-10 sm:pb-14 bg-champagne-light/50 border-y border-champagne/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             Explore Our <span className="font-bold italic text-gold">Collections</span>
           </h2>

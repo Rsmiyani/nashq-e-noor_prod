@@ -4,11 +4,11 @@ import { Award, ShieldCheck, HeartHandshake } from 'lucide-react';
 
 export const BrandStory: React.FC = () => {
   return (
-    <section id="story" className="py-20 sm:py-28 bg-champagne-light/40 border-t border-champagne/40 overflow-hidden">
+    <section id="story" className="pt-8 sm:pt-10 pb-12 sm:pb-16 bg-champagne-light/40 border-t border-champagne/40 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Editorial Heading */}
-        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             The Beauty of <span className="font-bold italic text-gold">Handcrafted Artistry</span>
           </h2>

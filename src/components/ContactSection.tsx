@@ -38,11 +38,11 @@ export const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-20 sm:py-28 bg-champagne-light/50 border-t border-champagne/40">
+    <section id="contact" className="pt-8 sm:pt-10 pb-12 sm:pb-16 bg-champagne-light/50 border-t border-champagne/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
-        <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             Connect with <span className="font-bold italic text-gold">Our Studio</span>
           </h2>
