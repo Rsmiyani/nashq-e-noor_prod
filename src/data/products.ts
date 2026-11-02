@@ -9,6 +9,7 @@ import heroSlide3Url from '../../assets/hero-slide-3-floral.jpg';
 import heroSlide1MobileUrl from '../../assets/hero-slide-1-mobile.jpg';
 import heroSlide2MobileUrl from '../../assets/hero-slide-2-mobile.jpg';
 import heroSlide3MobileUrl from '../../assets/hero-slide-3-mobile.jpg';
+import solvianLogoUrl from '../../assets/solvian-logo.webp';
 
 export type CategoryKey = string;
 
@@ -48,6 +49,7 @@ export const brandAssets = {
   heroSlide1Mobile: heroSlide1MobileUrl,
   heroSlide2Mobile: heroSlide2MobileUrl,
   heroSlide3Mobile: heroSlide3MobileUrl,
+  solvianLogo: solvianLogoUrl,
 };
 
 // Import all category images eagerly via Vite glob

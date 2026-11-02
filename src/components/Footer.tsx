@@ -190,15 +190,38 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         {/* Bottom Strip */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-warm-ivory/50 gap-4">
-          <p>
-            &copy; {currentYear} Naqsh-e-Noor. All rights reserved. Handcrafted with reverence.
-          </p>
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-warm-ivory/50 gap-4 sm:gap-6 border-t border-champagne/15 mt-2">
+          {/* Copyright & Tagline */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <p>
+              &copy; {currentYear} Naqsh-e-Noor. All rights reserved.
+            </p>
+            <span className="hidden sm:inline text-champagne/30">•</span>
+            <p className="flex items-center gap-1.5 text-xs text-warm-ivory/60">
+              <span>Preserving Indian Heritage Embroidery</span>
+              <Heart className="w-3 h-3 text-gold inline fill-gold" />
+            </p>
+          </div>
 
-          <p className="flex items-center gap-1.5 text-xs text-warm-ivory/60">
-            <span>Preserving Indian Heritage Embroidery</span>
-            <Heart className="w-3.5 h-3.5 text-gold inline fill-gold" />
-          </p>
+          {/* Made & Managed By Solvian Technologies */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            <span className="text-[11px] sm:text-xs uppercase tracking-[0.16em] font-bold text-champagne/80">
+              Made &amp; Managed By
+            </span>
+            <a
+              href="https://solviantechnologies.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center bg-white px-3 py-1.5 rounded-lg sm:rounded-xl shadow-xs hover:shadow-md hover:scale-[1.03] transition-all duration-200 border border-white/90 group"
+              title="Solvian Technologies"
+            >
+              <img
+                src={brandAssets.solvianLogo}
+                alt="Solvian Technologies"
+                className="h-4 sm:h-5 w-auto object-contain"
+              />
+            </a>
+          </div>
         </div>
 
       </div>
