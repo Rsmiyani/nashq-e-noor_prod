@@ -7,12 +7,12 @@ import heroSlide1Url from '../../assets/hero-slide-1-artisan.jpg';
 import heroSlide2Url from '../../assets/hero-slide-2-bridal.jpg';
 import heroSlide3Url from '../../assets/hero-slide-3-floral.jpg';
 
-export type CategoryKey = 'all' | 'bridal' | 'embroidery' | 'floral' | 'hoop' | 'hues';
+export type CategoryKey = string;
 
 export interface Product {
   id: string; // e.g. BRD-001
   name: string; // e.g. Bridal Design 01
-  category: 'bridal' | 'embroidery' | 'floral' | 'hoop' | 'hues';
+  category: string;
   categoryLabel: string;
   image: string;
   sourceFile: string;
@@ -23,7 +23,7 @@ export interface Product {
 }
 
 export interface CollectionMeta {
-  key: 'bridal' | 'embroidery' | 'floral' | 'hoop' | 'hues';
+  key: string;
   title: string;
   subtitle: string;
   description: string;

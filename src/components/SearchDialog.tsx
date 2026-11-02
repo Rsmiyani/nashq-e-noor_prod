@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, X, ArrowRight, Sparkles } from 'lucide-react';
-import { allProducts, Product } from '../data/products';
+import { Product } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 
 interface SearchDialogProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export const SearchDialog: React.FC<SearchDialogProps> = ({
   onClose,
   onSelectProduct,
 }) => {
+  const { products: allProducts } = useCatalog();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 

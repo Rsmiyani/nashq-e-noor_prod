@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { X, MessageCircle, Share2, ZoomIn, Check, Sparkles, ArrowRight } from 'lucide-react';
-import { Product, allProducts } from '../data/products';
+import { Product } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -15,6 +16,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onInquire,
   onSelectRelated,
 }) => {
+  const { products: allProducts } = useCatalog();
   const [copied, setCopied] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -182,7 +184,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   Investment &amp; Pricing
                 </span>
                 <span className="font-serif text-base sm:text-lg text-espresso italic font-bold">
-                  {product.price}
+                  {product.price && product.price.trim() !== '' ? product.price : 'Price upon request'}
                 </span>
                 <p className="text-[10.5px] sm:text-[11px] text-muted-brown mt-1">
                   Custom sizes, color variations, and personalized motifs can be tailored upon inquiry.

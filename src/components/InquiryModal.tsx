@@ -124,7 +124,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
               {product.name}
             </h4>
             <p className="text-xs text-muted-brown italic">
-              {product.price}
+              {product.price && product.price.trim() !== '' ? product.price : 'Price upon request'}
             </p>
           </div>
         </div>

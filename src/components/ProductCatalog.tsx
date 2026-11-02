@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X, SlidersHorizontal, RefreshCw, Shuffle } from 'lucide-react';
-import { allProducts, Product, CategoryKey } from '../data/products';
+import { Product, CategoryKey } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 import { ProductCard } from './ProductCard';
 
 interface ProductCatalogProps {
@@ -20,6 +21,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   searchQuery,
   onSearchChange,
 }) => {
+  const { products: allProducts, categories: dynamicCategories } = useCatalog();
   const [sortBy, setSortBy] = useState<'default' | 'id-asc' | 'id-desc'>('default');
   const [visibleCount, setVisibleCount] = useState<number>(24);
   const [showAllInAllTab, setShowAllInAllTab] = useState<boolean>(false);
@@ -28,21 +30,23 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   // Check if we are in curated random preview mode for "All Designs"
   const isCuratedAllMode = selectedCategory === 'all' && !searchQuery.trim() && !showAllInAllTab;
 
-  // Stable curated random selection across all categories (12 pieces: balanced representation across all 5 categories)
+  // Stable curated random selection across all categories (12 pieces: balanced representation across all categories)
   const curatedRandomProducts = useMemo(() => {
-    const categories: CategoryKey[] = ['bridal', 'embroidery', 'floral', 'hoop', 'hues'];
+    const catKeys = dynamicCategories.length > 0
+      ? dynamicCategories.map((c) => c.key)
+      : ['bridal', 'embroidery', 'floral', 'hoop', 'hues'];
     const poolByCategory: Record<string, Product[]> = {};
 
-    categories.forEach((cat) => {
+    catKeys.forEach((cat) => {
       poolByCategory[cat] = [...allProducts.filter((p) => p.category === cat)].sort(() => Math.random() - 0.5);
     });
 
     const selected: Product[] = [];
     let catIndex = 0;
 
-    // Round-robin selection across all 5 categories up to 12 items (guarantees every category is represented)
+    // Round-robin selection across all categories up to 12 items (guarantees every category is represented)
     while (selected.length < 12) {
-      const cat = categories[catIndex % categories.length];
+      const cat = catKeys[catIndex % catKeys.length];
       const pool = poolByCategory[cat];
       if (pool && pool.length > 0) {
         selected.push(pool.pop()!);
@@ -53,7 +57,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
 
     // Interleave and randomize the final display order
     return selected.sort(() => Math.random() - 0.5);
-  }, [shuffleSeed]);
+  }, [allProducts, dynamicCategories, shuffleSeed]);
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
@@ -96,7 +100,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
     }
 
     return result;
-  }, [selectedCategory, searchQuery, sortBy, isCuratedAllMode, curatedRandomProducts]);
+  }, [allProducts, selectedCategory, searchQuery, sortBy, isCuratedAllMode, curatedRandomProducts]);
 
   const displayedProducts = useMemo(() => {
     if (isCuratedAllMode) {
@@ -106,18 +110,20 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   }, [filteredProducts, visibleCount, isCuratedAllMode]);
 
   // Category filters with dynamic counts
-  const categoryFilters: { key: CategoryKey; label: string; count: number }[] = [
-    {
-      key: 'all',
-      label: 'All Designs',
-      count: isCuratedAllMode ? 12 : (searchQuery.trim() ? filteredProducts.length : allProducts.length),
-    },
-    { key: 'bridal', label: 'Bridal', count: allProducts.filter((p) => p.category === 'bridal').length },
-    { key: 'embroidery', label: 'Embroidery', count: allProducts.filter((p) => p.category === 'embroidery').length },
-    { key: 'floral', label: 'Floral', count: allProducts.filter((p) => p.category === 'floral').length },
-    { key: 'hoop', label: 'Hoop Art', count: allProducts.filter((p) => p.category === 'hoop').length },
-    { key: 'hues', label: 'Hues', count: allProducts.filter((p) => p.category === 'hues').length },
-  ];
+  const categoryFilters: { key: CategoryKey; label: string; count: number }[] = useMemo(() => {
+    return [
+      {
+        key: 'all',
+        label: 'All Designs',
+        count: isCuratedAllMode ? 12 : (searchQuery.trim() ? filteredProducts.length : allProducts.length),
+      },
+      ...dynamicCategories.map((c) => ({
+        key: c.key,
+        label: c.label,
+        count: allProducts.filter((p) => p.category === c.key).length,
+      })),
+    ];
+  }, [dynamicCategories, allProducts, isCuratedAllMode, searchQuery, filteredProducts.length]);
 
   const handleClearFilters = () => {
     onSelectCategory('all');

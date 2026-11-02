@@ -12,9 +12,12 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { InquiryModal } from './components/InquiryModal';
 import { SearchDialog } from './components/SearchDialog';
 import { BackToTop } from './components/BackToTop';
-import { allProducts, Product, CategoryKey } from './data/products';
+import { Product, CategoryKey } from './data/products';
+import { CatalogProvider, useCatalog } from './context/CatalogContext';
+import { AdminPortal } from './components/admin/AdminPortal';
 
-export default function App() {
+function Storefront() {
+  const { products: allProducts } = useCatalog();
   const [activeSection, setActiveSection] = useState<string>('hero');
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -44,7 +47,7 @@ export default function App() {
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [allProducts]);
 
   // Update hash when opening/closing product detail
   const handleOpenProductDetail = useCallback((product: Product) => {
@@ -102,10 +105,9 @@ export default function App() {
 
   // Accurate Active section scroll spy using getBoundingClientRect
   useEffect(() => {
-    // Ordered sequentially down the page
     const sections: { id: string; navId: string }[] = [
       { id: 'hero', navId: 'hero' },
-      { id: 'about', navId: 'hero' }, // About/Intro is part of Home experience
+      { id: 'about', navId: 'hero' },
       { id: 'collections', navId: 'collections' },
       { id: 'catalog', navId: 'catalog' },
       { id: 'story', navId: 'story' },
@@ -113,16 +115,13 @@ export default function App() {
     ];
 
     const handleScroll = () => {
-      // If user recently clicked a nav item, do not let intermediate scroll events override it
       if (isNavigatingRef.current) return;
 
-      // Bottom of page detection (Contact section)
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 70) {
         setActiveSection('contact');
         return;
       }
 
-      // Check current section intersecting the viewport near the top
       const headerOffset = 70;
       for (const section of sections) {
         const el = document.getElementById(section.id);
@@ -142,7 +141,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden w-full max-w-full">
-      {/* Main Sticky Header */}
+      {/* Main Sticky Header - Clean & Pure, ZERO admin buttons */}
       <Header
         activeSection={activeSection}
         onNavigate={handleNavigate}
@@ -150,7 +149,7 @@ export default function App() {
         onGeneralInquiry={() => handleNavigate('contact')}
       />
 
-      {/* Hero Section with Image Slider */}
+      {/* Storefront Main Experience */}
       <main className="flex-1">
         <HeroSlider
           onExploreCollections={() => handleNavigate('collections')}
@@ -222,5 +221,50 @@ export default function App() {
         onSelectProduct={handleOpenProductDetail}
       />
     </div>
+  );
+}
+
+export default function App() {
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
+    const hash = window.location.hash.toLowerCase();
+    const path = window.location.pathname.toLowerCase();
+    return hash === '#admin' || hash.startsWith('#admin') || path === '/admin' || path.startsWith('/admin');
+  });
+
+  useEffect(() => {
+    const checkRoute = () => {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      setIsAdminRoute(
+        hash === '#admin' || hash.startsWith('#admin') || path === '/admin' || path.startsWith('/admin')
+      );
+    };
+
+    window.addEventListener('hashchange', checkRoute);
+    window.addEventListener('popstate', checkRoute);
+    return () => {
+      window.removeEventListener('hashchange', checkRoute);
+      window.removeEventListener('popstate', checkRoute);
+    };
+  }, []);
+
+  const handleExitAdmin = useCallback(() => {
+    if (window.location.hash.includes('admin')) {
+      window.location.hash = '';
+    }
+    if (window.location.pathname.includes('admin')) {
+      window.history.pushState(null, '', '/');
+    }
+    setIsAdminRoute(false);
+  }, []);
+
+  return (
+    <CatalogProvider>
+      {isAdminRoute ? (
+        <AdminPortal onExit={handleExitAdmin} />
+      ) : (
+        <Storefront />
+      )}
+    </CatalogProvider>
   );
 }

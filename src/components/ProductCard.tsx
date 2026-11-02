@@ -117,8 +117,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-brown font-semibold leading-tight">
               Inquiry
             </span>
-            <span className="text-[11px] sm:text-xs font-serif italic text-espresso font-semibold leading-snug">
-              {product.price}
+            <span className="text-[11px] sm:text-xs font-serif italic text-espresso font-semibold leading-snug truncate max-w-[120px]">
+              {product.price && product.price.trim() !== '' ? product.price : 'Price upon request'}
             </span>
           </div>
 
