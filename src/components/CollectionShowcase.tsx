@@ -29,15 +29,17 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
   onSelect,
 }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [prevIdx, setPrevIdx] = useState<number | null>(null);
 
-  // Automatically cycle photos every intervalMs
+  // Automatically cycle photos with lens-focus and silk sheen reveal effect
   useEffect(() => {
     if (!images || images.length <= 1) return;
     const timer = setInterval(() => {
+      setPrevIdx(currentIdx);
       setCurrentIdx((prev) => (prev + 1) % images.length);
     }, intervalMs);
     return () => clearInterval(timer);
-  }, [images, intervalMs]);
+  }, [images, intervalMs, currentIdx]);
 
   return (
     <div
@@ -57,32 +59,43 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
       }}
       aria-label={`Explore ${title} (${itemCountLabel})`}
     >
-      {/* Auto-cycling Category Photography with Smooth Crossfade */}
+      {/* Auto-cycling Photography with Dynamic Lens Focus & Scale Effect */}
       <div className="absolute inset-0 bg-espresso-dark overflow-hidden">
-        {images.map((imgUrl, idx) => {
-          const isVisible = idx === currentIdx;
-          return (
-            <img
-              key={imgUrl}
-              src={imgUrl}
-              alt={`${title} handcrafted design`}
-              className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-in-out ${
-                isVisible
-                  ? 'opacity-90 group-hover:opacity-100 scale-100 group-hover:scale-105'
-                  : 'opacity-0 scale-100 pointer-events-none'
-              } transition-transform duration-700`}
-              loading={idx === 0 ? 'eager' : 'lazy'}
-            />
-          );
-        })}
+        {/* Underlying Previous Photo (Ensures seamless continuous transition with no background flicker) */}
+        {prevIdx !== null && images[prevIdx] && (
+          <img
+            src={images[prevIdx]}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-center scale-100 brightness-[0.92]"
+          />
+        )}
+
+        {/* Active Incoming Photo: Lens Focus & Scale Reveal */}
+        <img
+          key={currentIdx}
+          src={images[currentIdx]}
+          alt={`${title} handcrafted design`}
+          className="luxury-image-reveal absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+          loading="eager"
+        />
+
+        {/* Subtle Silk Light Sheen Flash on photo change */}
+        <div
+          key={`sheen-${currentIdx}`}
+          className="luxury-sheen absolute inset-0 bg-gradient-to-r from-transparent via-gold-light/25 to-transparent pointer-events-none"
+        />
 
         {/* Cinematic Gradient: Darker at bottom for text readability, clear at top to showcase the embroidery */}
         <div className="absolute inset-0 bg-gradient-to-t from-espresso-dark via-espresso-dark/45 to-transparent pointer-events-none" />
       </div>
 
-      {/* Floating Micro Badge: Count on Top Right */}
+      {/* Floating Micro Badge: Live Photo Index & Category Count on Top Right */}
       <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-espresso-dark/75 backdrop-blur-md border border-champagne/35 text-[10.5px] text-champagne font-semibold tracking-wider shadow-sm">
-        <span className="w-1.5 h-1.5 rounded-full bg-gold" />
+        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+        <span className="font-mono text-[9.5px] text-champagne/80">
+          {String(currentIdx + 1).padStart(2, '0')}/{String(images.length).padStart(2, '0')}
+        </span>
+        <span className="w-1 h-1 rounded-full bg-champagne/40" />
         <span>{itemCountLabel}</span>
       </div>
 

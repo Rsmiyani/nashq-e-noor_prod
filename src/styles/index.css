@@ -93,3 +93,46 @@
   animation: heroTextEnter 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Luxury Editorial Image Reveal with Lens Focus & Scale */
+@keyframes luxuryImageReveal {
+  0% {
+    opacity: 0;
+    transform: scale(1.08);
+    filter: blur(8px);
+  }
+  50% {
+    opacity: 0.85;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.luxury-image-reveal {
+  animation: luxuryImageReveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+/* Subtle Gold Silk Sheen Flash across card */
+@keyframes luxurySheen {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(220%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.luxury-sheen {
+  animation: luxurySheen 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
