@@ -91,12 +91,6 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
 
       {/* Reduced, Clean Bottom Content Overlay */}
       <div className="relative z-10 p-5 sm:p-6 lg:p-7 text-warm-ivory mt-auto">
-        {isFeatured && (
-          <div className="inline-block px-2.5 py-0.5 rounded bg-gold text-warm-ivory text-[10.5px] font-bold uppercase tracking-wider mb-2 shadow-xs">
-            Featured Atelier
-          </div>
-        )}
-
         {/* Clean Title - 'Collection' removed */}
         <h3
           className={`font-serif font-bold text-warm-ivory tracking-wide group-hover:text-champagne transition-colors ${

@@ -1,6 +1,6 @@
 import React from 'react';
 import { brandAssets } from '../data/products';
-import { Sparkles, Award, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { Award, ShieldCheck, HeartHandshake } from 'lucide-react';
 
 export const BrandStory: React.FC = () => {
   return (
@@ -9,10 +9,6 @@ export const BrandStory: React.FC = () => {
         
         {/* Editorial Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-champagne text-xs font-bold uppercase tracking-widest text-espresso mb-3">
-            <Sparkles className="w-3 h-3 text-gold" />
-            <span>Philosophy &amp; Artistry</span>
-          </div>
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             The Beauty of <span className="font-bold italic text-gold">Handcrafted Artistry</span>
           </h2>

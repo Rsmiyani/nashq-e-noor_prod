@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, X, SlidersHorizontal, Sparkles, RefreshCw } from 'lucide-react';
+import { Search, X, SlidersHorizontal, RefreshCw } from 'lucide-react';
 import { allProducts, Product, CategoryKey } from '../data/products';
 import { ProductCard } from './ProductCard';
 
@@ -89,10 +89,6 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
         
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-champagne text-xs font-bold uppercase tracking-widest text-espresso mb-3">
-            <Sparkles className="w-3 h-3 text-gold" />
-            <span>Complete Collection Archive</span>
-          </div>
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             The Complete <span className="font-bold italic text-gold">Catalog</span>
           </h2>

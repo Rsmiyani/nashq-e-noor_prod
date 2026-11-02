@@ -1,5 +1,5 @@
 import React from 'react';
-import { Instagram, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Instagram, ArrowUpRight } from 'lucide-react';
 import { allProducts, INSTAGRAM_URL, INSTAGRAM_HANDLE, Product } from '../data/products';
 
 interface InstagramShowcaseProps {
@@ -23,10 +23,6 @@ export const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ onSelectPr
         
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-champagne text-xs font-bold uppercase tracking-widest text-espresso mb-3">
-            <Instagram className="w-3.5 h-3.5 text-gold" />
-            <span>Social Visual Journal</span>
-          </div>
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             Follow Our <span className="font-bold italic text-gold">Creative Journey</span>
           </h2>

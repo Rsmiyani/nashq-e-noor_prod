@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Phone, Instagram, Send, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MessageCircle, Phone, Instagram, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import {
   WHATSAPP_DISPLAY_PHONE,
   WHATSAPP_PHONE,
@@ -43,10 +43,6 @@ export const ContactSection: React.FC = () => {
         
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-champagne text-xs font-bold uppercase tracking-widest text-espresso mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
-            <span>Studio Dialogue</span>
-          </div>
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
             Connect with <span className="font-bold italic text-gold">Our Studio</span>
           </h2>
