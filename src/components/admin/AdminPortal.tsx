@@ -881,17 +881,10 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
 
                               {/* Status */}
                               <td className="py-3 px-4 whitespace-nowrap">
-                                {p.featured ? (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800 border border-amber-300">
-                                    <Sparkles className="w-3 h-3 text-gold" />
-                                    <span>Spotlight</span>
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-champagne/60 text-espresso/70">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                    <span>Live</span>
-                                  </span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-champagne/60 text-espresso/70">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  <span>Live</span>
+                                </span>
                               </td>
 
                               {/* Actions */}
@@ -1448,17 +1441,6 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
                   className="w-full px-3 py-2 bg-warm-ivory border border-champagne rounded-xl text-xs text-espresso focus:outline-none focus:border-gold resize-none"
                 />
               </div>
-
-              {/* Spotlight Toggle */}
-              <label className="flex items-center gap-2 text-xs font-semibold text-espresso cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formFeatured}
-                  onChange={(e) => setFormFeatured(e.target.checked)}
-                  className="rounded text-gold focus:ring-gold"
-                />
-                <span>Feature in Curated Spotlight</span>
-              </label>
 
               {/* Actions */}
               <div className="pt-3 border-t border-champagne flex items-center justify-end gap-3">

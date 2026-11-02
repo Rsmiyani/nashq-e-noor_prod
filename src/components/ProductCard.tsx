@@ -58,16 +58,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        {/* Top Badges: Category & ID */}
-        <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-3 sm:right-3 flex items-center justify-between pointer-events-none">
+        {/* Top Badges: ID */}
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex items-center pointer-events-none">
           <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded bg-warm-ivory/90 backdrop-blur-sm text-[9.5px] sm:text-[11px] font-semibold tracking-wider text-espresso shadow-xs border border-champagne/60">
             {product.id}
           </span>
-          {product.featured && (
-            <span className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded bg-gold text-warm-ivory text-[8.5px] sm:text-[10px] font-bold tracking-wider uppercase shadow-xs">
-              Curated
-            </span>
-          )}
         </div>
 
         {/* Hover Overlay Button to View Details */}
