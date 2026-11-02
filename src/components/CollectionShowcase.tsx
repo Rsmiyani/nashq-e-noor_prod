@@ -89,16 +89,6 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-espresso-dark via-espresso-dark/45 to-transparent pointer-events-none" />
       </div>
 
-      {/* Floating Micro Badge: Live Photo Index & Category Count on Top Right */}
-      <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-espresso-dark/75 backdrop-blur-md border border-champagne/35 text-[10.5px] text-champagne font-semibold tracking-wider shadow-sm">
-        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-        <span className="font-mono text-[9.5px] text-champagne/80">
-          {String(currentIdx + 1).padStart(2, '0')}/{String(images.length).padStart(2, '0')}
-        </span>
-        <span className="w-1 h-1 rounded-full bg-champagne/40" />
-        <span>{itemCountLabel}</span>
-      </div>
-
       {/* Reduced, Clean Bottom Content Overlay */}
       <div className="relative z-10 p-5 sm:p-6 lg:p-7 text-warm-ivory mt-auto">
         {isFeatured && (
