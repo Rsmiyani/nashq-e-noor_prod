@@ -191,19 +191,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
         {/* Bottom Strip */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-warm-ivory/50 gap-4 sm:gap-6 border-t border-champagne/15 mt-2">
-          {/* Copyright & Tagline */}
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
-            <p>
-              &copy; {currentYear} Naqsh-e-Noor. All rights reserved.
-            </p>
-            <span className="hidden sm:inline text-champagne/30">•</span>
-            <p className="flex items-center gap-1.5 text-xs text-warm-ivory/60">
-              <span>Preserving Indian Heritage Embroidery</span>
-              <Heart className="w-3 h-3 text-gold inline fill-gold" />
-            </p>
-          </div>
-
-          {/* Made & Managed By Solvian Technologies */}
+          {/* Made & Managed By Solvian Technologies (Left) */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <span className="text-[11px] sm:text-xs uppercase tracking-[0.16em] font-bold text-champagne/80">
               Made &amp; Managed By
@@ -221,6 +209,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 className="h-4 sm:h-5 w-auto object-contain"
               />
             </a>
+          </div>
+
+          {/* Copyright & Tagline (Right) */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center md:text-right">
+            <p>
+              &copy; {currentYear} Naqsh-e-Noor. All rights reserved.
+            </p>
+            <span className="hidden sm:inline text-champagne/30">•</span>
+            <p className="flex items-center gap-1.5 text-xs text-warm-ivory/60">
+              <span>Preserving Indian Heritage Embroidery</span>
+              <Heart className="w-3 h-3 text-gold inline fill-gold" />
+            </p>
           </div>
         </div>
 
