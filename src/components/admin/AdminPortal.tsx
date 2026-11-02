@@ -125,19 +125,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   };
 
   // Load Database State
-  const refreshData = async () => {
-    setLoading(true);
+  const refreshData = async (forceFresh = false) => {
+    if (products.length === 0) {
+      setLoading(true);
+    }
     try {
       const health = await checkDatabaseHealth();
       setDbHealth(health);
 
       if (health.categoriesTableExists) {
-        const liveCats = await fetchLiveCategories().catch(() => []);
+        const liveCats = await fetchLiveCategories(forceFresh).catch(() => []);
         setCategories(liveCats);
       }
 
       if (health.productsTableExists) {
-        const liveProds = await fetchLiveProducts().catch(() => []);
+        const liveProds = await fetchLiveProducts(forceFresh).catch(() => []);
         setProducts(liveProds);
 
         // Pre-fill quick price map
@@ -620,10 +622,10 @@ CREATE POLICY "Public Manage Products" ON public.products FOR ALL USING (true) W
 
             {/* Refresh Button */}
             <button
-              onClick={refreshData}
+              onClick={() => refreshData(true)}
               disabled={loading}
               className="p-2 text-espresso/70 hover:text-gold hover:bg-champagne/30 rounded-xl transition-colors border border-champagne/40"
-              title="Refresh database"
+              title="Force sync database"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-gold' : ''}`} />
             </button>

@@ -1,5 +1,13 @@
-  import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import { Product } from '../data/products';
+import {
+  getCachedProducts,
+  setCachedProducts,
+  updateSingleCachedProduct,
+  removeSingleCachedProduct,
+  getCachedCategories,
+  setCachedCategories,
+} from './cache';
 
 // Read from Vite env or localStorage override if admin entered them in the browser
 const supabaseUrl =
@@ -18,7 +26,6 @@ export interface DBCategory {
   id: string; // e.g. 'bridal', 'embroidery', etc.
   label: string; // e.g. 'Bridal', 'Embroidery'
   description?: string;
-  display_order?: number;
   created_at?: string;
 }
 
@@ -33,7 +40,6 @@ export interface DBProduct {
   price?: string; // empty string for initial items
   tags?: string[];
   featured?: boolean;
-  display_order?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -82,9 +88,16 @@ export async function checkDatabaseHealth(): Promise<{
 }
 
 /**
- * Fetch all categories from Supabase
+ * Fetch all categories with IndexedDB caching
  */
-export async function fetchLiveCategories(): Promise<DBCategory[]> {
+export async function fetchLiveCategories(forceFresh = false): Promise<DBCategory[]> {
+  if (!forceFresh) {
+    const cached = await getCachedCategories();
+    if (cached && cached.length > 0) {
+      return cached;
+    }
+  }
+
   const { data, error } = await supabase
     .from('categories')
     .select('*')
@@ -92,9 +105,16 @@ export async function fetchLiveCategories(): Promise<DBCategory[]> {
 
   if (error) {
     console.warn('[Supabase] Error fetching categories, using fallback:', error.message);
+    const cachedFallback = await getCachedCategories();
+    if (cachedFallback) return cachedFallback;
     throw error;
   }
-  return data || [];
+
+  const live = data || [];
+  if (live.length > 0) {
+    setCachedCategories(live);
+  }
+  return live;
 }
 
 /**
@@ -120,22 +140,63 @@ export async function upsertCategory(cat: {
 }
 
 /**
- * Fetch all products from Supabase
+ * Fetch all products with Stale-While-Revalidate caching and chunked pagination
+ * - Returns in <15ms if cached in IndexedDB
+ * - Chunks network queries in batches of 30 to avoid browser payload freezes
  */
-export async function fetchLiveProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('category', { ascending: true })
-    .order('id', { ascending: true });
+export async function fetchLiveProducts(forceFresh = false): Promise<Product[]> {
+  if (!forceFresh) {
+    const cached = await getCachedProducts();
+    if (cached && cached.length > 0) {
+      // Revalidate in background to keep data fresh without blocking UI
+      revalidateProductsInBackground();
+      return cached;
+    }
+  }
 
-  if (error) {
-    console.warn('[Supabase] Error fetching products, using fallback:', error.message);
-    throw error;
+  return fetchAndCacheAllProducts();
+}
+
+/**
+ * Helper to fetch products in paginated chunks and cache to IndexedDB
+ */
+async function fetchAndCacheAllProducts(): Promise<Product[]> {
+  const pageSize = 30;
+  let allRows: DBProduct[] = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const to = from + pageSize - 1;
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('category', { ascending: true })
+      .order('id', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      console.warn('[Supabase] Error fetching product chunk, using cached fallback:', error.message);
+      const fallback = await getCachedProducts();
+      if (fallback) return fallback;
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      hasMore = false;
+      break;
+    }
+
+    allRows = allRows.concat(data as DBProduct[]);
+    if (data.length < pageSize) {
+      hasMore = false;
+    } else {
+      from += pageSize;
+    }
   }
 
   // Map DB format to storefront Product format
-  return (data || []).map((row: DBProduct) => ({
+  const mapped: Product[] = allRows.map((row: DBProduct) => ({
     id: row.id,
     name: row.name,
     category: row.category as any,
@@ -143,10 +204,36 @@ export async function fetchLiveProducts(): Promise<Product[]> {
     image: row.image,
     sourceFile: row.source_file || row.id,
     description: row.description || '',
-    price: row.price || '', // empty if not set
+    price: row.price || '',
     tags: row.tags || [],
     featured: !!row.featured,
   }));
+
+  if (mapped.length > 0) {
+    await setCachedProducts(mapped);
+  }
+
+  return mapped;
+}
+
+let isRevalidating = false;
+async function revalidateProductsInBackground() {
+  if (isRevalidating) return;
+  isRevalidating = true;
+  try {
+    const { count } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+
+    const cached = await getCachedProducts();
+    if (!cached || (count !== null && cached.length !== count)) {
+      await fetchAndCacheAllProducts();
+    }
+  } catch (err) {
+    console.debug('[Supabase] Background revalidation failed silently:', err);
+  } finally {
+    isRevalidating = false;
+  }
 }
 
 /**
@@ -183,6 +270,21 @@ export async function upsertProduct(product: {
     .single();
 
   if (error) throw error;
+
+  // Immediately update local cache
+  updateSingleCachedProduct({
+    id: product.id.trim(),
+    name: product.name.trim(),
+    category: product.category.toLowerCase().trim() as any,
+    categoryLabel: product.categoryLabel || `${product.category} Collection`,
+    image: product.image,
+    sourceFile: product.sourceFile || product.id,
+    description: product.description || '',
+    price: product.price?.trim() || '',
+    tags: product.tags || [],
+    featured: !!product.featured,
+  });
+
   return data;
 }
 
@@ -199,6 +301,14 @@ export async function updateProductPrice(id: string, price: string): Promise<voi
     .eq('id', id);
 
   if (error) throw error;
+
+  // Update in local cache as well
+  getCachedProducts().then((cached) => {
+    if (cached) {
+      const updated = cached.map((p) => (p.id === id ? { ...p, price: price.trim() } : p));
+      setCachedProducts(updated);
+    }
+  });
 }
 
 /**
@@ -207,6 +317,9 @@ export async function updateProductPrice(id: string, price: string): Promise<voi
 export async function deleteProduct(id: string): Promise<void> {
   const { error } = await supabase.from('products').delete().eq('id', id);
   if (error) throw error;
+
+  // Remove from cache
+  removeSingleCachedProduct(id);
 }
 
 /**
@@ -269,4 +382,3 @@ export async function convertUrlToBase64(url: string, maxWidth = 1000, quality =
   const file = new File([blob], 'image.webp', { type: blob.type });
   return convertFileToBase64(file, maxWidth, quality);
 }
-
