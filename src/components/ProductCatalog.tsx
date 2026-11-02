@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, X, SlidersHorizontal, RefreshCw, Shuffle, Sparkles } from 'lucide-react';
+import { Search, X, SlidersHorizontal, RefreshCw, Shuffle } from 'lucide-react';
 import { allProducts, Product, CategoryKey } from '../data/products';
 import { ProductCard } from './ProductCard';
 
@@ -293,35 +293,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               ))}
             </div>
 
-            {/* Curated Cross-Category Mode Footer */}
-            {isCuratedAllMode && (
-              <div className="mt-12 text-center space-y-4 bg-cream/70 rounded-2xl border border-champagne/80 p-6 sm:p-8 max-w-2xl mx-auto shadow-xs">
-                <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold font-bold">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Curated Cross-Category Selection</span>
-                </div>
-                <p className="text-sm text-espresso/80 font-medium max-w-md mx-auto">
-                  Showing 12 pieces randomly selected across Bridal, Embroidery, Floral, Hoops &amp; Hues. Select any collection tab above to explore full archives.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                  <button
-                    onClick={() => setShuffleSeed((s) => s + 1)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold tracking-wider uppercase rounded-lg transition-colors shadow-sm focus:outline-none"
-                  >
-                    <Shuffle className="w-3.5 h-3.5" />
-                    <span>Shuffle Selection</span>
-                  </button>
-                  <button
-                    onClick={() => setShowAllInAllTab(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-warm-ivory hover:bg-champagne/40 text-espresso text-xs font-semibold tracking-wider uppercase rounded-lg border border-champagne transition-colors focus:outline-none"
-                  >
-                    <span>View Full Archive ({allProducts.length} Designs)</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Standard Pagination Controls for specific categories or expanded archive view */}
+            {/* Standard Pagination Controls for specific categories */}
             {!isCuratedAllMode && visibleCount < filteredProducts.length && (
               <div className="mt-14 text-center space-y-4">
                 <p className="text-xs text-muted-brown">
@@ -342,35 +314,6 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                     Show All ({filteredProducts.length})
                   </button>
                 </div>
-
-                {showAllInAllTab && selectedCategory === 'all' && (
-                  <div className="pt-2">
-                    <button
-                      onClick={() => {
-                        setShowAllInAllTab(false);
-                        setVisibleCount(24);
-                      }}
-                      className="text-xs text-gold hover:text-gold-dark font-semibold tracking-wider uppercase underline"
-                    >
-                      ← Back to Curated Selection (12 Pieces)
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* When all items in full archive are shown, give option to return to curated if in 'all' */}
-            {!isCuratedAllMode && visibleCount >= filteredProducts.length && showAllInAllTab && selectedCategory === 'all' && (
-              <div className="mt-8 text-center">
-                <button
-                  onClick={() => {
-                    setShowAllInAllTab(false);
-                    setVisibleCount(24);
-                  }}
-                  className="text-xs text-gold hover:text-gold-dark font-semibold tracking-wider uppercase underline"
-                >
-                  ← Back to Curated Selection (12 Pieces)
-                </button>
               </div>
             )}
           </>
