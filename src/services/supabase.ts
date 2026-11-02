@@ -88,7 +88,7 @@ export async function fetchLiveCategories(): Promise<DBCategory[]> {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
-    .order('display_order', { ascending: true });
+    .order('created_at', { ascending: true });
 
   if (error) {
     console.warn('[Supabase] Error fetching categories, using fallback:', error.message);
@@ -104,7 +104,6 @@ export async function upsertCategory(cat: {
   id: string;
   label: string;
   description?: string;
-  display_order?: number;
 }): Promise<DBCategory> {
   const { data, error } = await supabase
     .from('categories')
@@ -112,7 +111,6 @@ export async function upsertCategory(cat: {
       id: cat.id.toLowerCase().trim(),
       label: cat.label.trim(),
       description: cat.description || '',
-      display_order: cat.display_order ?? 0,
     })
     .select()
     .single();
@@ -271,3 +269,4 @@ export async function convertUrlToBase64(url: string, maxWidth = 1000, quality =
   const file = new File([blob], 'image.webp', { type: blob.type });
   return convertFileToBase64(file, maxWidth, quality);
 }
+

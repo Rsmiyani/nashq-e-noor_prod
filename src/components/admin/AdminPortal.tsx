@@ -279,7 +279,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
         id: newCatId.trim().toLowerCase().replace(/\s+/g, '-'),
         label: newCatLabel.trim(),
         description: newCatDesc.trim(),
-        display_order: categories.length + 1,
       });
 
       showStatus(`Category "${newCatLabel}" created!`, 'success');
@@ -310,7 +309,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       ];
 
       for (const cat of defaultCategories) {
-        await upsertCategory(cat).catch(() => {});
+        await upsertCategory(cat);
       }
 
       // 2. Transfer products sequentially with Base64 conversion
