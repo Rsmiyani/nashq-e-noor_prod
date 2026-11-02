@@ -22,6 +22,65 @@ const supabaseAnonKey =
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * -------------------------------------------------------------
+ * Supabase Auth Services for Atelier Admin Portal
+ * -------------------------------------------------------------
+ */
+
+/**
+ * Sign in admin using email and password via Supabase server-side auth.
+ * Validates credentials on Supabase and sets an encrypted JWT session token.
+ */
+export async function signInAdmin(email: string, password: string) {
+  return await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password: password.trim(),
+  });
+}
+
+/**
+ * Register an admin user in Supabase auth backend.
+ */
+export async function signUpAdmin(email: string, password: string) {
+  return await supabase.auth.signUp({
+    email: email.trim(),
+    password: password.trim(),
+  });
+}
+
+/**
+ * Sign out admin and revoke the Supabase JWT session.
+ */
+export async function signOutAdmin() {
+  return await supabase.auth.signOut();
+}
+
+/**
+ * Retrieve current active Supabase session.
+ */
+export async function getAdminSession() {
+  return await supabase.auth.getSession();
+}
+
+/**
+ * Get current authenticated user details.
+ */
+export async function getCurrentAdminUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+/**
+ * Subscribe to Supabase Auth state changes (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED).
+ */
+export function onAdminAuthChange(callback: (session: any) => void) {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session);
+  });
+  return subscription;
+}
+
 export interface DBCategory {
   id: string; // e.g. 'bridal', 'embroidery', etc.
   label: string; // e.g. 'Bridal', 'Embroidery'
