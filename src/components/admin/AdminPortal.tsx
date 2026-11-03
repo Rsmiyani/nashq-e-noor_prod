@@ -632,15 +632,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
             </button>
           </form>
 
-          {/* Security Guarantee Badge */}
-          <div className="bg-warm-ivory/80 rounded-xl p-3 border border-champagne/80 text-[11px] text-muted-brown flex items-center gap-2.5 text-left">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-            <div>
-              <span className="font-semibold text-espresso">Enterprise Server-Side Security: </span>
-              Credentials verified against Supabase encrypted backend with signed security tokens.
-            </div>
-          </div>
-
           <div className="pt-4 border-t border-champagne/60">
             <button
               onClick={onExit}
