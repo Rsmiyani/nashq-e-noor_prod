@@ -143,3 +143,26 @@
   will-change: transform, opacity;
 }
 
+/* Continuous Infinite Reviews Marquee (Right to Left) */
+@keyframes reviewsMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-reviews-marquee {
+  display: flex;
+  width: max-content;
+  animation: reviewsMarquee 42s linear infinite;
+  will-change: transform;
+}
+
+.animate-reviews-marquee:hover,
+.animate-reviews-marquee:focus-within {
+  animation-play-state: paused;
+}
+
+

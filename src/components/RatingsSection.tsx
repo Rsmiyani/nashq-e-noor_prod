@@ -96,6 +96,18 @@ export const RatingsSection: React.FC = () => {
     return reviews.filter((r) => r.rating === filterRating);
   }, [reviews, filterRating]);
 
+  // Seamless loop marquee list (duplicates elements to ensure infinite seamless scrolling)
+  const marqueeList = useMemo(() => {
+    if (filteredReviews.length === 0) return [];
+    // Ensure the first half and second half are identical for seamless infinite -50% scroll
+    const multiplier = Math.max(1, Math.ceil(5 / filteredReviews.length));
+    const half: DBReview[] = [];
+    for (let i = 0; i < multiplier; i++) {
+      half.push(...filteredReviews);
+    }
+    return [...half, ...half];
+  }, [filteredReviews]);
+
   // Handle form submit
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,89 +301,104 @@ export const RatingsSection: React.FC = () => {
           </span>
         </div>
 
-        {/* Reviews Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredReviews.map((item) => {
-            const initials = item.name
-              .split(' ')
-              .map((w) => w[0])
-              .join('')
-              .toUpperCase()
-              .substring(0, 2);
+        {/* Continuous Single-Line Infinite Marquee Animation (Right to Left) */}
+        <div className="relative w-full overflow-hidden py-3">
+          {/* Subtle Luxury Gradient Edge Masks */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-28 bg-gradient-to-r from-warm-ivory via-warm-ivory/80 to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-28 bg-gradient-to-l from-warm-ivory via-warm-ivory/80 to-transparent z-10" />
 
-            return (
-              <div
-                key={item.id}
-                className="p-5 sm:p-6 rounded-xl bg-cream border border-champagne/70 shadow-xs hover:shadow-luxury hover:border-gold/50 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
-              >
-                {/* Subtle Watermark Quote Mark */}
-                <Quote className="absolute -bottom-2 -right-2 w-16 h-16 text-champagne/25 pointer-events-none transform rotate-180" />
+          {/* Marquee Track (Smooth, Continuous Right-to-Left Animation with Pause on Hover) */}
+          <div className="animate-reviews-marquee gap-4 sm:gap-6 flex py-3 cursor-grab active:cursor-grabbing">
+            {marqueeList.map((item, index) => {
+              const initials = item.name
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
 
-                <div>
-                  {/* Top Row: User Avatar & Stars */}
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-3">
-                      {/* Avatar Medallion */}
-                      <div className="w-10 h-10 rounded-full bg-champagne/40 border border-gold/40 flex items-center justify-center font-serif font-bold text-xs text-espresso shrink-0 shadow-xs">
-                        {initials}
-                      </div>
-                      <div>
-                        <h4 className="font-serif text-sm sm:text-base font-bold text-espresso leading-snug">
-                          {item.name}
-                        </h4>
-                        <div className="flex items-center gap-1 text-[10px] text-sage font-semibold uppercase tracking-wider">
-                          <CheckCircle className="w-3 h-3 text-sage inline" />
-                          <span>Verified Patron</span>
+              return (
+                <div
+                  key={`${item.id}-${index}`}
+                  className="w-[290px] xs:w-[330px] sm:w-[380px] h-[230px] sm:h-[245px] shrink-0 p-5 sm:p-6 rounded-2xl bg-cream border border-champagne/80 shadow-xs hover:shadow-luxury hover:border-gold/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden select-none"
+                >
+                  {/* Subtle Watermark Quote Mark */}
+                  <Quote className="absolute -bottom-2 -right-2 w-16 h-16 text-champagne/20 pointer-events-none transform rotate-180" />
+
+                  <div>
+                    {/* Top Row: User Avatar & Stars */}
+                    <div className="flex items-start justify-between gap-3 mb-2.5">
+                      <div className="flex items-center gap-2.5">
+                        {/* Avatar Medallion */}
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-champagne/40 border border-gold/40 flex items-center justify-center font-serif font-bold text-xs text-espresso shrink-0 shadow-xs">
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-serif text-sm sm:text-base font-bold text-espresso leading-snug truncate max-w-[140px] sm:max-w-[170px]">
+                            {item.name}
+                          </h4>
+                          <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] text-sage font-semibold uppercase tracking-wider">
+                            <CheckCircle className="w-3 h-3 text-sage inline shrink-0" />
+                            <span>Verified Patron</span>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Gold Star Display */}
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            className={`w-3.5 h-3.5 ${
+                              s <= item.rating
+                                ? 'text-gold fill-gold'
+                                : 'text-champagne/60 fill-champagne/20'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
 
-                    {/* Gold Star Display */}
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          className={`w-3.5 h-3.5 ${
-                            s <= item.rating
-                              ? 'text-gold fill-gold'
-                              : 'text-champagne/60 fill-champagne/20'
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    {/* Occasion / Collection Tag */}
+                    {item.occasion && (
+                      <div className="mb-2">
+                        <span className="inline-block px-2 py-0.5 rounded bg-warm-ivory text-[10px] sm:text-[10.5px] font-medium text-gold border border-champagne/60 truncate max-w-full">
+                          {item.occasion}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Review Text */}
+                    <p className="text-xs sm:text-[13px] text-espresso/85 leading-relaxed font-normal line-clamp-4">
+                      "{item.review}"
+                    </p>
                   </div>
 
-                  {/* Occasion / Collection Tag */}
-                  {item.occasion && (
-                    <div className="mb-2.5">
-                      <span className="inline-block px-2 py-0.5 rounded bg-warm-ivory text-[10.5px] font-medium text-gold border border-champagne/60">
-                        {item.occasion}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Review Text */}
-                  <p className="text-xs sm:text-sm text-espresso/85 leading-relaxed font-normal">
-                    "{item.review}"
-                  </p>
+                  {/* Footer: City & Date */}
+                  <div className="pt-3 mt-3 border-t border-champagne/40 flex items-center justify-between text-[11px] text-muted-brown">
+                    <span className="truncate max-w-[140px]">{item.city || 'Atelier Patron'}</span>
+                    <span className="shrink-0">
+                      {item.created_at
+                        ? new Date(item.created_at).toLocaleDateString('en-IN', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })
+                        : 'Recent Order'}
+                    </span>
+                  </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Footer: City & Date */}
-                <div className="pt-4 mt-4 border-t border-champagne/40 flex items-center justify-between text-[11px] text-muted-brown">
-                  <span>{item.city || 'Atelier Client'}</span>
-                  <span>
-                    {item.created_at
-                      ? new Date(item.created_at).toLocaleDateString('en-IN', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
-                      : 'Recent Order'}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+          {/* Pause hint */}
+          <div className="text-center pt-2">
+            <span className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11px] text-muted-brown/75 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-gold/70 animate-pulse" />
+              <span>Hover over any review card to pause and read</span>
+            </span>
+          </div>
         </div>
 
         {/* Success Toast */}
