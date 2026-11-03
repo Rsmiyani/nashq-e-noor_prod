@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { X, MessageCircle, Share2, ZoomIn, Check, Sparkles, ArrowRight } from 'lucide-react';
+import { X, MessageCircle, Share2, ZoomIn, Check, Sparkles, ArrowRight, ShoppingBag } from 'lucide-react';
 import { Product } from '../data/products';
 import { useCatalog } from '../context/CatalogContext';
+import { useCart } from '../context/CartContext';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -17,7 +18,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onSelectRelated,
 }) => {
   const { products: allProducts } = useCatalog();
+  const { addToCart, isInCart, openCart } = useCart();
   const [copied, setCopied] = useState(false);
+  const [addedBag, setAddedBag] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -214,17 +217,62 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Inquire on WhatsApp CTA */}
+            {/* Inquiry & Cart CTAs */}
             <div className="pt-4 border-t border-champagne/60 space-y-3">
-              <button
-                onClick={() => onInquire(product)}
-                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 bg-gold hover:bg-gold-dark text-warm-ivory text-sm font-semibold tracking-wider uppercase rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Inquire on WhatsApp</span>
-              </button>
-              <p className="text-center text-xs text-muted-brown">
-                Opens pre-filled message with design ID &amp; your specifications
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Add to Inquiry Bag */}
+                <button
+                  onClick={() => {
+                    addToCart(product);
+                    setAddedBag(true);
+                    setTimeout(() => setAddedBag(false), 2000);
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold tracking-wider uppercase text-xs transition-all focus:outline-none border shadow-xs ${
+                    addedBag
+                      ? 'bg-sage text-white border-sage'
+                      : isInCart(product.id)
+                      ? 'bg-cream text-espresso border-gold hover:bg-champagne/30'
+                      : 'bg-warm-ivory text-espresso border-champagne hover:bg-champagne hover:border-gold'
+                  }`}
+                >
+                  {addedBag ? (
+                    <>
+                      <Check className="w-4 h-4 text-white" />
+                      <span>Added to Bag!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4 text-gold" />
+                      <span>{isInCart(product.id) ? 'Add Another to Bag' : '+ Add to Inquiry Bag'}</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Direct WhatsApp Inquiry */}
+                <button
+                  onClick={() => onInquire(product)}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold tracking-wider uppercase rounded-lg shadow-sm hover:shadow transition-all focus:outline-none"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Inquire on WhatsApp</span>
+                </button>
+              </div>
+
+              {isInCart(product.id) && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    openCart();
+                  }}
+                  className="w-full text-center text-xs text-gold hover:text-gold-dark font-semibold py-1 flex items-center justify-center gap-1 transition-colors"
+                >
+                  <span>View your Inquiry Bag</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              <p className="text-center text-[11px] text-muted-brown">
+                Add multiple designs to inquire all at once, or chat directly with our senior artisan
               </p>
             </div>
 

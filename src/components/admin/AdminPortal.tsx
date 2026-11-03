@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   KeyRound,
   Loader2,
+  Star,
 } from 'lucide-react';
 import { Product, brandAssets } from '../../data/products';
 import {
@@ -51,12 +52,13 @@ import {
   onAdminAuthChange,
   DBCategory,
 } from '../../services/supabase';
+import { AdminReviewsTab } from './AdminReviewsTab';
 
 interface AdminPortalProps {
   onExit: () => void;
 }
 
-type TabType = 'dashboard' | 'products' | 'pricing' | 'categories';
+type TabType = 'dashboard' | 'products' | 'pricing' | 'categories' | 'reviews';
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
   // Supabase Server-Side Authentication State
@@ -679,6 +681,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
       icon: Layers,
       badge: categories.length,
     },
+    {
+      id: 'reviews',
+      label: 'Ratings & Reviews',
+      icon: Star,
+    },
   ];
 
   return (
@@ -810,12 +817,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                 {activeTab === 'products' && 'Product Management'}
                 {activeTab === 'pricing' && 'Quick Price Batch Editor'}
                 {activeTab === 'categories' && 'Collections & Categories'}
+                {activeTab === 'reviews' && 'Ratings & Reviews Management'}
               </h2>
               <p className="text-xs text-muted-brown hidden sm:block truncate">
                 {activeTab === 'dashboard' && 'High-level atelier overview and inventory metrics.'}
                 {activeTab === 'products' && 'Manage atelier creations, photography, and collections.'}
                 {activeTab === 'pricing' && 'Directly enter and save product prices.'}
                 {activeTab === 'categories' && 'Organize design collections and filter taxonomy.'}
+                {activeTab === 'reviews' && 'Manage client testimonials, star ratings, and storefront visibility.'}
               </p>
             </div>
           </div>
@@ -1672,6 +1681,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExit }) => {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* ========================================================== */}
+          {/* TAB 6: RATINGS & REVIEWS MANAGEMENT                        */}
+          {/* ========================================================== */}
+          {activeTab === 'reviews' && (
+            <AdminReviewsTab />
           )}
 
         </main>

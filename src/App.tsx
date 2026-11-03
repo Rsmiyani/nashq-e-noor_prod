@@ -12,12 +12,16 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { InquiryModal } from './components/InquiryModal';
 import { SearchDialog } from './components/SearchDialog';
 import { BackToTop } from './components/BackToTop';
+import { CartDrawer } from './components/CartDrawer';
+import { RatingsSection } from './components/RatingsSection';
 import { Product, CategoryKey } from './data/products';
 import { CatalogProvider, useCatalog } from './context/CatalogContext';
+import { CartProvider, useCart } from './context/CartContext';
 import { AdminPortal } from './components/admin/AdminPortal';
 
 function Storefront() {
   const { products: allProducts } = useCatalog();
+  const { toastMessage, openCart } = useCart();
   const [activeSection, setActiveSection] = useState<string>('hero');
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -179,6 +183,9 @@ function Storefront() {
         {/* Craftsmanship & Brand Story */}
         <BrandStory />
 
+        {/* Customer Ratings & Atelier Testimonials */}
+        <RatingsSection />
+
         {/* Instagram Showcase */}
         <InstagramShowcase
           onSelectProduct={handleOpenProductDetail}
@@ -220,6 +227,26 @@ function Storefront() {
         onClose={() => setSearchDialogOpen(false)}
         onSelectProduct={handleOpenProductDetail}
       />
+
+      {/* Inquiry Bag Slide-Over Drawer */}
+      <CartDrawer
+        onViewProduct={handleOpenProductDetail}
+        onExploreCatalog={() => handleNavigate('catalog')}
+      />
+
+      {/* Toast Notification when adding items to Inquiry Bag */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-6 z-50 bg-espresso text-warm-ivory px-4 py-3 rounded-xl shadow-2xl border border-gold/40 flex items-center gap-3 animate-fade-in">
+          <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+          <p className="text-xs font-semibold text-warm-ivory">{toastMessage}</p>
+          <button
+            onClick={openCart}
+            className="text-xs text-gold hover:text-gold-light underline font-bold ml-1 focus:outline-none"
+          >
+            View Bag
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -270,7 +297,9 @@ function MainRouter() {
 export default function App() {
   return (
     <CatalogProvider>
-      <MainRouter />
+      <CartProvider>
+        <MainRouter />
+      </CartProvider>
     </CatalogProvider>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Eye, MessageCircle } from 'lucide-react';
+import { Eye, MessageCircle, ShoppingBag, Check } from 'lucide-react';
 import { Product } from '../data/products';
+import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [addedJustNow, setAddedJustNow] = useState(false);
+  const { addToCart, isInCart } = useCart();
+  const inBag = isInCart(product.id);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToCart(product);
+    setAddedJustNow(true);
+    setTimeout(() => setAddedJustNow(false), 1400);
+  };
 
   return (
     <div className="group bg-cream rounded-lg overflow-hidden border border-champagne/70 hover:border-gold/60 shadow-sm hover:shadow-luxury transition-all duration-300 flex flex-col h-full">
@@ -65,18 +76,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </span>
         </div>
 
-        {/* Hover Overlay Button to View Details */}
-        <div className="absolute inset-0 bg-espresso-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4">
+        {/* Hover Overlay Button to View Details & Quick Add */}
+        <div className="absolute inset-0 bg-espresso-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 p-3">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(product);
             }}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-warm-ivory hover:bg-cream text-espresso text-[11px] sm:text-xs font-semibold tracking-wider uppercase rounded shadow-md transition-transform transform translate-y-2 group-hover:translate-y-0 duration-200 flex items-center gap-1.5 focus:outline-none"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-warm-ivory hover:bg-cream text-espresso text-[10px] sm:text-xs font-semibold tracking-wider uppercase rounded shadow-md transition-transform transform translate-y-2 group-hover:translate-y-0 duration-200 flex items-center gap-1.5 focus:outline-none"
             aria-label={`Inspect ${product.name}`}
           >
             <Eye className="w-3.5 h-3.5 text-gold" />
-            <span>View Details</span>
+            <span>Details</span>
+          </button>
+
+          <button
+            onClick={handleAddToCart}
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-gold hover:bg-gold-dark text-warm-ivory text-[10px] sm:text-xs font-semibold tracking-wider uppercase rounded shadow-md transition-transform transform translate-y-2 group-hover:translate-y-0 duration-200 flex items-center gap-1.5 focus:outline-none"
+            aria-label={`Add ${product.name} to inquiry bag`}
+            title="Add to Inquiry Bag"
+          >
+            {addedJustNow ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-warm-ivory" />
+                <span>Added!</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5 text-warm-ivory" />
+                <span>+ Bag</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -106,26 +136,55 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </p>
         </div>
 
-        {/* Bottom Price & Inquiry CTA */}
+        {/* Bottom Price & Action CTAs */}
         <div className="pt-2 sm:pt-4 mt-2 sm:mt-3 border-t border-champagne/40 flex items-center justify-between gap-1.5 sm:gap-2">
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-brown font-semibold leading-tight">
               Inquiry
             </span>
-            <span className="text-[11px] sm:text-xs font-serif italic text-espresso font-semibold leading-snug truncate max-w-[120px]">
-              {product.price && product.price.trim() !== '' ? product.price : 'Price upon request'}
+            <span className="text-[11px] sm:text-xs font-serif italic text-espresso font-semibold leading-snug truncate max-w-[105px] xs:max-w-[130px]">
+              {product.price && product.price.trim() !== '' ? product.price : 'Price on request'}
             </span>
           </div>
 
-          <button
-            onClick={() => onQuickInquire(product)}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-champagne hover:bg-gold text-espresso hover:text-warm-ivory text-[10px] sm:text-xs font-semibold tracking-wider uppercase rounded transition-colors duration-200 focus:outline-none"
-            title={`Inquire about ${product.id} on WhatsApp`}
-            aria-label={`Inquire about ${product.id} on WhatsApp`}
-          >
-            <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold group-hover:text-warm-ivory" />
-            <span>Inquire</span>
-          </button>
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Quick Add to Inquiry Bag Button */}
+            <button
+              onClick={handleAddToCart}
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded transition-all duration-200 flex items-center gap-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wider focus:outline-none ${
+                addedJustNow
+                  ? 'bg-sage text-white'
+                  : inBag
+                  ? 'bg-gold/15 text-gold border border-gold/40 hover:bg-gold hover:text-warm-ivory'
+                  : 'bg-warm-ivory hover:bg-champagne/60 text-espresso border border-champagne/80'
+              }`}
+              title={inBag ? 'Piece in Inquiry Bag (Click to add more)' : 'Add to Inquiry Bag'}
+              aria-label={`Add ${product.name} to inquiry bag`}
+            >
+              {addedJustNow ? (
+                <>
+                  <Check className="w-3 h-3 text-white" />
+                  <span className="hidden xs:inline text-[9.5px]">Added</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${inBag ? 'text-gold group-hover:text-inherit' : 'text-espresso/70'}`} />
+                  <span className="hidden xs:inline text-[9.5px]">{inBag ? 'In Bag' : '+ Bag'}</span>
+                </>
+              )}
+            </button>
+
+            {/* Direct WhatsApp Inquire Button */}
+            <button
+              onClick={() => onQuickInquire(product)}
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 bg-champagne hover:bg-gold text-espresso hover:text-warm-ivory text-[10px] sm:text-xs font-semibold tracking-wider uppercase rounded transition-colors duration-200 focus:outline-none"
+              title={`Direct WhatsApp chat for ${product.id}`}
+              aria-label={`Direct WhatsApp chat for ${product.id}`}
+            >
+              <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold group-hover:text-warm-ivory" />
+              <span className="hidden sm:inline">Inquire</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

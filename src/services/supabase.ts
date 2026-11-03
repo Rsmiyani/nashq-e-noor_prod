@@ -556,3 +556,321 @@ export async function convertUrlToBase64(url: string, maxWidth = 1000, quality =
   const file = new File([blob], 'image.webp', { type: blob.type });
   return convertFileToBase64(file, maxWidth, quality);
 }
+
+/**
+ * -------------------------------------------------------------
+ * Customer Ratings & Reviews Management
+ * -------------------------------------------------------------
+ */
+
+export interface DBReview {
+  id: string;
+  name: string;
+  rating: number; // 1 to 5
+  review: string;
+  occasion?: string;
+  city?: string;
+  status: 'approved' | 'pending' | 'hidden';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const SEED_REVIEWS: DBReview[] = [
+  {
+    id: 'seed-rev-1',
+    name: 'Aishwarya Singhania',
+    rating: 5,
+    review:
+      'The zardozi work on my bridal lehanga border was beyond breathtaking. The micro-details in metallic gold dabka and pearls look like royal heirlooms. The direct WhatsApp consultation with the artisans gave me complete peace of mind.',
+    occasion: 'Royal Bridal Trousseau',
+    city: 'Jaipur / Delhi',
+    status: 'approved',
+    created_at: new Date(Date.now() - 4 * 86400000).toISOString(),
+  },
+  {
+    id: 'seed-rev-2',
+    name: 'Devika Patel',
+    rating: 5,
+    review:
+      'Ordered two custom botanical floral hoops for our anniversary. The French knots and shading on the silk threads are so delicate! They arrived beautifully packaged in sustainable linen with a handwritten care card.',
+    occasion: 'Floral Embroidery Hoop',
+    city: 'Ahmedabad',
+    status: 'approved',
+    created_at: new Date(Date.now() - 8 * 86400000).toISOString(),
+  },
+  {
+    id: 'seed-rev-3',
+    name: 'Meera Nambiar',
+    rating: 5,
+    review:
+      'In an era of fast fashion, Naqsh-e-Noor preserves true slow Indian needlework. The craftsmanship is pure poetry. You can feel the patience and human hand in every single stitch.',
+    occasion: 'Generational Needlework Piece',
+    city: 'Bengaluru',
+    status: 'approved',
+    created_at: new Date(Date.now() - 14 * 86400000).toISOString(),
+  },
+  {
+    id: 'seed-rev-4',
+    name: 'Rhea & Karan Malhotra',
+    rating: 5,
+    review:
+      'Our bespoke wedding monogram hoop was the highlight of our welcome table. Every guest stopped to admire the precision of the metallic needlework. Truly an heirloom we will treasure forever.',
+    occasion: 'Bespoke Wedding Monogram',
+    city: 'Mumbai',
+    status: 'approved',
+    created_at: new Date(Date.now() - 21 * 86400000).toISOString(),
+  },
+  {
+    id: 'seed-rev-5',
+    name: 'Dr. Shalini Sen',
+    rating: 4,
+    review:
+      'Exceptional artistry and authentic colors. The team accommodated my custom color preference patiently. Delivery took a little time because each piece is made by hand, but the final piece was absolutely worth the wait.',
+    occasion: 'Custom Velvet Wall Art',
+    city: 'Kolkata',
+    status: 'approved',
+    created_at: new Date(Date.now() - 28 * 86400000).toISOString(),
+  },
+];
+
+const LOCAL_REVIEWS_KEY = 'naqsh_reviews_cache_v1';
+
+function getLocalReviews(): DBReview[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_REVIEWS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn('Failed to parse local reviews', e);
+  }
+  return [];
+}
+
+function saveLocalReviews(reviews: DBReview[]) {
+  try {
+    localStorage.setItem(LOCAL_REVIEWS_KEY, JSON.stringify(reviews));
+  } catch (e) {
+    console.warn('Failed to save local reviews', e);
+  }
+}
+
+/**
+ * Check if the reviews table exists in Supabase
+ */
+export async function checkReviewsTableHealth(): Promise<{
+  exists: boolean;
+  count: number;
+  error?: string;
+}> {
+  try {
+    const { count, error } = await supabase
+      .from('reviews')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) {
+      return {
+        exists: error.code !== 'PGRST205',
+        count: 0,
+        error: error.message,
+      };
+    }
+    return {
+      exists: true,
+      count: count || 0,
+    };
+  } catch (err: any) {
+    return {
+      exists: false,
+      count: 0,
+      error: err.message,
+    };
+  }
+}
+
+/**
+ * Fetch reviews from Supabase with graceful fallback to seed reviews + local storage
+ */
+export async function fetchLiveReviews(includeHidden = false): Promise<DBReview[]> {
+  try {
+    let query = supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!includeHidden) {
+      query = query.eq('status', 'approved');
+    }
+
+    const { data, error } = await query;
+
+    if (!error && data && data.length > 0) {
+      // Sync local cache
+      saveLocalReviews(data);
+      return data as DBReview[];
+    }
+
+    if (error && error.code !== 'PGRST205') {
+      console.warn('[Supabase] Error fetching reviews:', error.message);
+    }
+  } catch (e: any) {
+    console.warn('[Supabase] Reviews fetch network issue:', e.message);
+  }
+
+  // Fallback to local storage or seed reviews
+  const local = getLocalReviews();
+  if (local.length > 0) {
+    return includeHidden ? local : local.filter((r) => r.status === 'approved');
+  }
+
+  // Initialize local with seed reviews
+  saveLocalReviews(SEED_REVIEWS);
+  return includeHidden ? SEED_REVIEWS : SEED_REVIEWS.filter((r) => r.status === 'approved');
+}
+
+/**
+ * Submit a customer review from the storefront
+ */
+export async function submitCustomerReview(reviewData: {
+  name: string;
+  rating: number;
+  review: string;
+  occasion?: string;
+  city?: string;
+}): Promise<DBReview> {
+  const newReview: DBReview = {
+    id: 'rev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+    name: reviewData.name.trim(),
+    rating: Math.max(1, Math.min(5, Math.round(reviewData.rating))),
+    review: reviewData.review.trim(),
+    occasion: reviewData.occasion?.trim() || '',
+    city: reviewData.city?.trim() || '',
+    status: 'approved', // instantly visible on storefront
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  // Optimistically store in local storage
+  const current = getLocalReviews();
+  saveLocalReviews([newReview, ...current.filter((r) => r.id !== newReview.id)]);
+
+  // Attempt to write to Supabase table
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .insert({
+        name: newReview.name,
+        rating: newReview.rating,
+        review: newReview.review,
+        occasion: newReview.occasion,
+        city: newReview.city,
+        status: newReview.status,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      // Replace with database generated ID if assigned
+      const updatedList = [data as DBReview, ...current.filter((r) => r.id !== newReview.id)];
+      saveLocalReviews(updatedList);
+      return data as DBReview;
+    } else if (error) {
+      console.warn('[Supabase] Could not insert to reviews table, retained in local storage:', error.message);
+    }
+  } catch (e: any) {
+    console.warn('[Supabase] Exception submitting review:', e.message);
+  }
+
+  return newReview;
+}
+
+/**
+ * Admin: Upsert or edit any review
+ */
+export async function upsertAdminReview(review: Partial<DBReview> & {
+  name: string;
+  rating: number;
+  review: string;
+}): Promise<DBReview> {
+  const id = review.id || 'rev_' + Date.now();
+  const formatted: DBReview = {
+    id,
+    name: review.name.trim(),
+    rating: Math.max(1, Math.min(5, Math.round(review.rating))),
+    review: review.review.trim(),
+    occasion: review.occasion?.trim() || '',
+    city: review.city?.trim() || '',
+    status: review.status || 'approved',
+    created_at: review.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  // Update local storage
+  const current = getLocalReviews();
+  const exists = current.some((r) => r.id === id);
+  const updatedList = exists
+    ? current.map((r) => (r.id === id ? formatted : r))
+    : [formatted, ...current];
+  saveLocalReviews(updatedList);
+
+  // Update Supabase
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .upsert({
+        id: id.startsWith('rev_') || id.startsWith('seed-') ? undefined : id,
+        name: formatted.name,
+        rating: formatted.rating,
+        review: formatted.review,
+        occasion: formatted.occasion,
+        city: formatted.city,
+        status: formatted.status,
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      return data as DBReview;
+    }
+  } catch (e: any) {
+    console.warn('[Supabase] Error upserting admin review:', e.message);
+  }
+
+  return formatted;
+}
+
+/**
+ * Admin: Update review status (Approve / Hide)
+ */
+export async function updateReviewStatus(
+  id: string,
+  status: 'approved' | 'hidden'
+): Promise<void> {
+  const current = getLocalReviews();
+  saveLocalReviews(
+    current.map((r) => (r.id === id ? { ...r, status, updated_at: new Date().toISOString() } : r))
+  );
+
+  try {
+    await supabase
+      .from('reviews')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id);
+  } catch (e) {
+    console.warn('[Supabase] Failed updating review status in DB:', e);
+  }
+}
+
+/**
+ * Admin: Delete a review
+ */
+export async function deleteReview(id: string): Promise<void> {
+  const current = getLocalReviews();
+  saveLocalReviews(current.filter((r) => r.id !== id));
+
+  try {
+    await supabase.from('reviews').delete().eq('id', id);
+  } catch (e) {
+    console.warn('[Supabase] Failed deleting review in DB:', e);
+  }
+}
+

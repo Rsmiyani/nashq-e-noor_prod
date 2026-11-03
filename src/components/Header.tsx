@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Search, MessageCircle, Instagram, ChevronRight } from 'lucide-react';
+import { Menu, X, Search, MessageCircle, Instagram, ChevronRight, ShoppingBag } from 'lucide-react';
 import { brandAssets, WHATSAPP_DISPLAY_PHONE, WHATSAPP_PHONE, INSTAGRAM_URL, CategoryKey } from '../data/products';
+import { useCart } from '../context/CartContext';
 
 interface HeaderProps {
   activeSection: string;
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { totalCount, openCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -132,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right Action Icons & WhatsApp Button */}
-          <div className="flex items-center space-x-1 sm:space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-3">
             {/* Search Trigger (Touch friendly 44px min tap target) */}
             <button
               onClick={onOpenSearch}
@@ -141,6 +143,21 @@ export const Header: React.FC<HeaderProps> = ({
               title="Search catalog"
             >
               <Search className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+            </button>
+
+            {/* Inquiry Bag / Cart Trigger */}
+            <button
+              onClick={openCart}
+              className="relative p-2.5 sm:p-2 text-espresso/75 hover:text-gold hover:bg-champagne/20 rounded-full transition-colors focus:outline-none"
+              aria-label={`View Inquiry Bag (${totalCount} items)`}
+              title={`Inquiry Bag (${totalCount})`}
+            >
+              <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              {totalCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-gold text-warm-ivory text-[9px] sm:text-[10px] font-bold rounded-full min-w-[17px] h-4 px-1 flex items-center justify-center shadow-xs">
+                  {totalCount > 99 ? '99+' : totalCount}
+                </span>
+              )}
             </button>
 
             {/* Instagram Link */}
@@ -237,6 +254,24 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="pt-4 border-t border-champagne/50 space-y-3">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                openCart();
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-espresso/80 hover:bg-champagne/20 transition-colors"
+            >
+              <span className="flex items-center gap-3">
+                <ShoppingBag className="w-4 h-4 text-gold" />
+                <span>Inquiry Bag</span>
+              </span>
+              {totalCount > 0 && (
+                <span className="bg-gold text-warm-ivory text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
