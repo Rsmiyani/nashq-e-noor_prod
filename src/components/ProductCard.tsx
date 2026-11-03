@@ -6,13 +6,12 @@ import { useCart } from '../context/CartContext';
 interface ProductCardProps {
   product: Product;
   onViewDetails: (product: Product) => void;
-  onQuickInquire: (product: Product) => void;
+  onQuickInquire?: (product: Product) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onViewDetails,
-  onQuickInquire,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -136,55 +135,47 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </p>
         </div>
 
-        {/* Bottom Price & Action CTAs */}
+        {/* Bottom Price & Add to Bag CTA */}
         <div className="pt-2 sm:pt-4 mt-2 sm:mt-3 border-t border-champagne/40 flex items-center justify-between gap-1.5 sm:gap-2">
           <div className="flex flex-col min-w-0">
             <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-brown font-semibold leading-tight">
               Inquiry
             </span>
-            <span className="text-[11px] sm:text-xs font-serif italic text-espresso font-semibold leading-snug truncate max-w-[105px] xs:max-w-[130px]">
+            <span className="text-[11px] sm:text-xs font-serif italic text-espresso font-semibold leading-snug truncate max-w-[105px] xs:max-w-[140px]">
               {product.price && product.price.trim() !== '' ? product.price : 'Price on request'}
             </span>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {/* Quick Add to Inquiry Bag Button */}
-            <button
-              onClick={handleAddToCart}
-              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded transition-all duration-200 flex items-center gap-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wider focus:outline-none ${
-                addedJustNow
-                  ? 'bg-sage text-white'
-                  : inBag
-                  ? 'bg-gold/15 text-gold border border-gold/40 hover:bg-gold hover:text-warm-ivory'
-                  : 'bg-warm-ivory hover:bg-champagne/60 text-espresso border border-champagne/80'
-              }`}
-              title={inBag ? 'Piece in Inquiry Bag (Click to add more)' : 'Add to Inquiry Bag'}
-              aria-label={`Add ${product.name} to inquiry bag`}
-            >
-              {addedJustNow ? (
-                <>
-                  <Check className="w-3 h-3 text-white" />
-                  <span className="hidden xs:inline text-[9.5px]">Added</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${inBag ? 'text-gold group-hover:text-inherit' : 'text-espresso/70'}`} />
-                  <span className="hidden xs:inline text-[9.5px]">{inBag ? 'In Bag' : '+ Bag'}</span>
-                </>
-              )}
-            </button>
-
-            {/* Direct WhatsApp Inquire Button */}
-            <button
-              onClick={() => onQuickInquire(product)}
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 bg-champagne hover:bg-gold text-espresso hover:text-warm-ivory text-[10px] sm:text-xs font-semibold tracking-wider uppercase rounded transition-colors duration-200 focus:outline-none"
-              title={`Direct WhatsApp chat for ${product.id}`}
-              aria-label={`Direct WhatsApp chat for ${product.id}`}
-            >
-              <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold group-hover:text-warm-ivory" />
-              <span className="hidden sm:inline">Inquire</span>
-            </button>
-          </div>
+          {/* Add to Inquiry Bag Button (Single Unified Inquiry Path) */}
+          <button
+            onClick={handleAddToCart}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[10.5px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-200 focus:outline-none shadow-xs shrink-0 ${
+              addedJustNow
+                ? 'bg-sage text-white shadow-sm'
+                : inBag
+                ? 'bg-gold/20 text-gold border border-gold hover:bg-gold hover:text-warm-ivory'
+                : 'bg-gold hover:bg-gold-dark text-warm-ivory hover:shadow'
+            }`}
+            title={inBag ? 'Piece in Inquiry Bag (Click to add another)' : 'Add to Inquiry Bag'}
+            aria-label={`Add ${product.name} to inquiry bag`}
+          >
+            {addedJustNow ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-white" />
+                <span>Added</span>
+              </>
+            ) : inBag ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-gold group-hover:text-warm-ivory" />
+                <span>In Bag</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5 text-warm-ivory" />
+                <span>Add to Bag</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
