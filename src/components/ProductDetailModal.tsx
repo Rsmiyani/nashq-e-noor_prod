@@ -225,7 +225,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   onClick={() => {
                     addToCart(product);
                     setAddedBag(true);
-                    setTimeout(() => setAddedBag(false), 2000);
+                    onClose();
                   }}
                   className={`w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-lg font-semibold tracking-wider uppercase text-xs transition-all focus:outline-none border shadow-xs ${
                     addedBag
@@ -253,9 +253,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   onClick={() => {
                     if (!isInCart(product.id)) {
                       addToCart(product);
+                    } else {
+                      openCart();
                     }
                     onClose();
-                    openCart();
                   }}
                   className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold tracking-wider uppercase rounded-lg shadow-sm hover:shadow transition-all focus:outline-none cursor-pointer"
                 >

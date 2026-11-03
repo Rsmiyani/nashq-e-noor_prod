@@ -150,23 +150,30 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     setIsSubmitting(false);
   };
 
-  if (!isCartOpen) return null;
-
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden"
+      className={`fixed inset-0 z-[60] overflow-hidden transition-all duration-300 ${
+        isCartOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none delay-300'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-label="Inquiry Bag Drawer"
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-espresso-dark/60 backdrop-blur-xs transition-opacity duration-300"
+        className={`fixed inset-0 bg-espresso-dark/60 backdrop-blur-xs transition-opacity duration-300 ease-out ${
+          isCartOpen ? 'opacity-100' : 'opacity-0'
+        }`}
         onClick={closeCart}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-        <div className="w-screen max-w-md sm:max-w-lg bg-warm-ivory text-espresso shadow-2xl flex flex-col border-l border-champagne/60">
+      {/* Slide-over panel container anchored to the right */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10 pointer-events-none">
+        <div
+          className={`w-screen max-w-md sm:max-w-lg bg-warm-ivory text-espresso shadow-2xl flex flex-col border-l border-champagne/60 pointer-events-auto transform transition-transform duration-350 ease-out ${
+            isCartOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
           
           {/* Drawer Header */}
           <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-champagne/60 bg-cream flex items-center justify-between">

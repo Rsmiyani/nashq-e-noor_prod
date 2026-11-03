@@ -91,6 +91,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ];
     });
     showToast(`Added ${product.id} to your Inquiry Bag`);
+    setIsCartOpen(true);
   }, [showToast]);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
