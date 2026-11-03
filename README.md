@@ -9,8 +9,8 @@ An inquiry-based, luxury heritage boutique catalog website crafted for **Naqsh-e
 - **Brand Name:** Naqsh-e-Noor
 - **Industry:** Handcrafted Embroidery, Bridal Artistry, Decorative Hoops, Floral Needlework, and Boutique Lifestyle Products
 - **Website Type:** Premium Product Catalog + WhatsApp Direct Inquiry Flow
-- **WhatsApp Phone:** `+91 95017 67133`
-- **WhatsApp URL:** `https://wa.me/919501767133`
+- **WhatsApp Phone:** `+91 78889 34041`
+- **WhatsApp URL:** `https://wa.me/917888934041`
 - **Instagram:** `https://www.instagram.com/naqsh_e_noor7/`
 - **Tagline:** *"Timeless Artistry, Thoughtfully Handcrafted."*
 
@@ -84,7 +84,7 @@ assets/
    - Direct button on cards, detail views, header, and contact section.
    - Modal collecting customer name (required) and optional customization requirements.
    - Prefills formatted message with Product Name, Product ID, Category, Direct URL link, and Customer notes.
-   - Encoded cleanly via `encodeURIComponent()` and dispatched directly to `https://wa.me/919501767133`.
+   - Encoded cleanly via `encodeURIComponent()` and dispatched directly to `https://wa.me/917888934041`.
 
 5. **Brand Story & Social Mosaic:**
    - Authentic slow-craftsmanship storytelling.

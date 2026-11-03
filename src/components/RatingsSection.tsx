@@ -543,3 +543,4 @@ export const RatingsSection: React.FC = () => {
     </section>
   );
 };
+

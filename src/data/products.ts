@@ -187,8 +187,8 @@ export const collections: CollectionMeta[] = [
 ];
 
 // WhatsApp URL generator helper
-export const WHATSAPP_PHONE = '919501767133';
-export const WHATSAPP_DISPLAY_PHONE = '+91 95017 67133';
+export const WHATSAPP_PHONE = '917888934041';
+export const WHATSAPP_DISPLAY_PHONE = '+91 78889 34041';
 export const INSTAGRAM_URL = 'https://www.instagram.com/naqsh_e_noor7/';
 export const INSTAGRAM_HANDLE = '@naqsh_e_noor7';
 
