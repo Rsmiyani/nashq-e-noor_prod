@@ -33,8 +33,8 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
       badge1: 'HANDCRAFTED HERITAGE',
       badge2: 'TIMELESS ATELIER',
       eyebrow: 'PREMIUM EMBROIDERY ATELIER • BESPOKE CREATIONS',
-      headlineLine1: 'EVERY THREAD.',
-      headlineLine2: 'TELLS A STORY.',
+      headlineLine1: 'HANDCRAFTED EMBROIDERY.',
+      headlineLine2: 'TIMELESS ARTISTRY.',
       description:
         'Discover timeless embroidery, lovingly handcrafted with delicate silk threads, heirloom zardozi, and meticulous attention to every petal and stitch.',
       ctaText: 'Explore Collections',
@@ -145,6 +145,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                 isCurrent ? 'scale-[1.02]' : 'scale-100'
               }`}
               loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
             />
 
             {/* Desktop Widescreen Image (Landscape composition for tablets & laptops) */}
@@ -155,6 +156,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                 isCurrent ? 'scale-[1.02]' : 'scale-100'
               }`}
               loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
             />
             
             {/* Mobile Gradient Overlays:
@@ -213,27 +215,50 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({
                   {slide.eyebrow}
                 </p>
 
-                {/* Large Bold Editorial Headline - Staggered lines */}
-                <h1 className="font-serif text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] font-bold tracking-tight text-warm-ivory leading-[1.15] sm:leading-[1.1] mb-2 sm:mb-3.5">
-                  <span
-                    className={`block text-warm-ivory transition-all duration-700 ease-out ${
-                      isCurrent
-                        ? 'opacity-100 translate-y-0 delay-[300ms]'
-                        : 'opacity-0 translate-y-3'
-                    }`}
-                  >
-                    {slide.headlineLine1}
-                  </span>
-                  <span
-                    className={`block text-champagne font-medium italic transition-all duration-700 ease-out ${
-                      isCurrent
-                        ? 'opacity-100 translate-y-0 delay-[400ms]'
-                        : 'opacity-0 translate-y-3'
-                    }`}
-                  >
-                    {slide.headlineLine2}
-                  </span>
-                </h1>
+                {/* Large Bold Editorial Headline - Staggered lines: Only Slide 0 uses H1 for SEO single-H1 compliance */}
+                {index === 0 ? (
+                  <h1 className="font-serif text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] font-bold tracking-tight text-warm-ivory leading-[1.15] sm:leading-[1.1] mb-2 sm:mb-3.5">
+                    <span
+                      className={`block text-warm-ivory transition-all duration-700 ease-out ${
+                        isCurrent
+                          ? 'opacity-100 translate-y-0 delay-[300ms]'
+                          : 'opacity-0 translate-y-3'
+                      }`}
+                    >
+                      {slide.headlineLine1}
+                    </span>
+                    <span
+                      className={`block text-champagne font-medium italic transition-all duration-700 ease-out ${
+                        isCurrent
+                          ? 'opacity-100 translate-y-0 delay-[400ms]'
+                          : 'opacity-0 translate-y-3'
+                      }`}
+                    >
+                      {slide.headlineLine2}
+                    </span>
+                  </h1>
+                ) : (
+                  <h2 className="font-serif text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] font-bold tracking-tight text-warm-ivory leading-[1.15] sm:leading-[1.1] mb-2 sm:mb-3.5">
+                    <span
+                      className={`block text-warm-ivory transition-all duration-700 ease-out ${
+                        isCurrent
+                          ? 'opacity-100 translate-y-0 delay-[300ms]'
+                          : 'opacity-0 translate-y-3'
+                      }`}
+                    >
+                      {slide.headlineLine1}
+                    </span>
+                    <span
+                      className={`block text-champagne font-medium italic transition-all duration-700 ease-out ${
+                        isCurrent
+                          ? 'opacity-100 translate-y-0 delay-[400ms]'
+                          : 'opacity-0 translate-y-3'
+                      }`}
+                    >
+                      {slide.headlineLine2}
+                    </span>
+                  </h2>
+                )}
 
                 {/* Refined Description (Constrained to 2 lines on small phones to ensure perfect button placement) */}
                 <p

@@ -18,7 +18,7 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onExploreClick }) => {
           {/* Left Column: Text & Editorial Statement */}
           <div className="lg:col-span-7 space-y-3 sm:space-y-3.5 text-center lg:text-left">
             <h2 className="font-serif text-2xl xs:text-3xl sm:text-4xl font-semibold text-espresso leading-tight">
-              Welcome to <span className="font-bold italic text-gold">Naqsh-e-Noor</span>
+              Welcome to <span className="font-bold italic text-gold">Naqsh-e-Noor</span> &mdash; Handcrafted Embroidery Atelier
             </h2>
 
             {/* Antique Gold Divider Line */}

@@ -141,7 +141,7 @@ export const CollectionShowcase: React.FC<CollectionShowcaseProps> = ({
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
-            Explore Our <span className="font-bold italic text-gold">Collections</span>
+            Handcrafted Embroidery <span className="font-bold italic text-gold">Collections</span>
           </h2>
           <div className="w-16 h-px bg-gold mx-auto my-3" />
           <p className="text-sm sm:text-base text-espresso/80 font-medium">

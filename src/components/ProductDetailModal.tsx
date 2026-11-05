@@ -196,9 +196,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
               {/* Craftsmanship Narrative */}
               <div>
-                <h4 className="text-[11px] sm:text-xs uppercase tracking-wider text-espresso font-semibold mb-1">
+                <h3 className="text-[11px] sm:text-xs uppercase tracking-wider text-espresso font-semibold mb-1">
                   Artisan Details
-                </h4>
+                </h3>
                 <p className="text-xs sm:text-sm text-espresso/80 leading-relaxed">
                   {product.description}
                 </p>
@@ -279,9 +279,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         {relatedProducts.length > 0 && (
           <div className="p-4 sm:p-8 bg-warm-ivory/60 border-t border-champagne/60">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h4 className="font-serif text-base sm:text-lg font-bold text-espresso">
+              <h3 className="font-serif text-base sm:text-lg font-bold text-espresso">
                 More from {product.categoryLabel}
-              </h4>
+              </h3>
               <span className="text-[11px] sm:text-xs text-muted-brown">Similar handcrafted designs</span>
             </div>
 

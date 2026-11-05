@@ -69,7 +69,7 @@ export const ContactSection: React.FC = () => {
               <a
                 href={`https://wa.me/${WHATSAPP_PHONE}`}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 className="flex items-center gap-4 p-4 rounded-lg bg-warm-ivory border border-champagne/70 hover:border-gold hover:shadow-sm transition-all group"
               >
                 <div className="w-11 h-11 rounded-full bg-gold/15 text-gold flex items-center justify-center group-hover:bg-gold group-hover:text-warm-ivory transition-colors">
@@ -107,7 +107,7 @@ export const ContactSection: React.FC = () => {
               <a
                 href={INSTAGRAM_URL}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 className="flex items-center gap-4 p-4 rounded-lg bg-warm-ivory border border-champagne/70 hover:border-gold hover:shadow-sm transition-all group"
               >
                 <div className="w-11 h-11 rounded-full bg-sage/15 text-sage flex items-center justify-center group-hover:bg-sage group-hover:text-warm-ivory transition-colors">

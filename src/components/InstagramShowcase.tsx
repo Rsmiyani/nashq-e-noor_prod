@@ -83,7 +83,7 @@ export const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ onSelectPr
           <a
             href={INSTAGRAM_URL}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-espresso hover:bg-espresso-dark text-warm-ivory text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-lg border border-champagne hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg group"
           >
             <Instagram className="w-4 h-4 text-gold group-hover:scale-110 transition-transform" />

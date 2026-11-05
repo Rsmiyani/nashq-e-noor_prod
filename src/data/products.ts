@@ -1,14 +1,14 @@
 // Naqsh-e-Noor Luxury Product Catalog & Asset Registry
 import logoUrl from '../../assets/logo.webp';
-import crestUrl from '../../assets/brand-crest.jpg';
+import crestUrl from '../../assets/brand-crest.webp';
 import detailUrl from '../../assets/detail.webp';
 import tealUrl from '../../assets/teal.webp';
-import heroSlide1Url from '../../assets/hero-slide-1-artisan.jpg';
-import heroSlide2Url from '../../assets/hero-slide-2-bridal.jpg';
-import heroSlide3Url from '../../assets/hero-slide-3-floral.jpg';
-import heroSlide1MobileUrl from '../../assets/hero-slide-1-mobile.jpg';
-import heroSlide2MobileUrl from '../../assets/hero-slide-2-mobile.jpg';
-import heroSlide3MobileUrl from '../../assets/hero-slide-3-mobile.jpg';
+import heroSlide1Url from '../../assets/hero-slide-1-artisan.webp';
+import heroSlide2Url from '../../assets/hero-slide-2-bridal.webp';
+import heroSlide3Url from '../../assets/hero-slide-3-floral.webp';
+import heroSlide1MobileUrl from '../../assets/hero-slide-1-mobile.webp';
+import heroSlide2MobileUrl from '../../assets/hero-slide-2-mobile.webp';
+import heroSlide3MobileUrl from '../../assets/hero-slide-3-mobile.webp';
 import solvianLogoUrl from '../../assets/solvian-logo.webp';
 
 export type CategoryKey = string;

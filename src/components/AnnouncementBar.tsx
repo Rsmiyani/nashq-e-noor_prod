@@ -17,7 +17,7 @@ export const AnnouncementBar: React.FC = () => {
           <a
             href={`https://wa.me/${WHATSAPP_PHONE}`}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="flex items-center gap-1.5 text-warm-ivory/90 hover:text-gold transition-colors"
             title="Inquire directly on WhatsApp"
           >

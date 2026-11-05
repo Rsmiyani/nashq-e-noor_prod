@@ -19,6 +19,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
   return (
     <footer className="bg-espresso text-warm-ivory/80 pt-10 sm:pt-16 pb-8 sm:pb-12 border-t border-gold/30 relative">
+      <h2 className="sr-only">Footer &amp; Atelier Information</h2>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-8 sm:pb-12 border-b border-champagne/20">
@@ -61,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <a
                 href={`https://wa.me/${WHATSAPP_PHONE}`}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 className="p-2.5 rounded-full bg-champagne/10 hover:bg-gold text-champagne hover:text-warm-ivory transition-colors"
                 aria-label="WhatsApp Contact"
                 title={`WhatsApp: ${WHATSAPP_DISPLAY_PHONE}`}
@@ -71,7 +72,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <a
                 href={INSTAGRAM_URL}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 className="p-2.5 rounded-full bg-champagne/10 hover:bg-gold text-champagne hover:text-warm-ivory transition-colors"
                 aria-label="Instagram Profile"
                 title={`Follow ${INSTAGRAM_HANDLE}`}
@@ -83,9 +84,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Collections Navigation */}
           <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-champagne">
+            <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-champagne">
               Collections
-            </h4>
+            </h3>
             <ul className="space-y-2 text-xs font-medium">
               {collections.map((col) => (
                 <li key={col.key}>
@@ -103,9 +104,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Quick Navigation Links */}
           <div className="lg:col-span-2 space-y-4">
-            <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-champagne">
+            <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-champagne">
               Atelier
-            </h4>
+            </h3>
             <ul className="space-y-2 text-xs font-medium">
               <li>
                 <button
@@ -152,16 +153,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Contact Details */}
           <div className="lg:col-span-2 space-y-4">
-            <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-champagne">
+            <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-champagne">
               Inquiries
-            </h4>
+            </h3>
             <div className="space-y-2 text-xs">
               <div>
                 <span className="text-warm-ivory/50 block text-[11px]">Direct WhatsApp</span>
                 <a
                   href={`https://wa.me/${WHATSAPP_PHONE}`}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   className="text-warm-ivory hover:text-gold font-medium"
                 >
                   {WHATSAPP_DISPLAY_PHONE}
@@ -173,7 +174,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <a
                   href={INSTAGRAM_URL}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   className="text-warm-ivory hover:text-gold font-medium"
                 >
                   {INSTAGRAM_HANDLE}
@@ -199,7 +200,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <a
               href="https://solviantechnologies.com"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="inline-flex items-center bg-white px-3 py-1.5 rounded-lg sm:rounded-xl shadow-xs hover:shadow-md hover:scale-[1.03] transition-all duration-200 border border-white/90 group"
               title="Solvian Technologies"
             >

@@ -390,9 +390,9 @@ export const RatingsSection: React.FC = () => {
                           {initials}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-serif text-sm sm:text-base font-bold text-espresso leading-snug truncate max-w-[140px] sm:max-w-[170px]">
+                          <h3 className="font-serif text-sm sm:text-base font-bold text-espresso leading-snug truncate max-w-[140px] sm:max-w-[170px]">
                             {item.name}
-                          </h4>
+                          </h3>
                           <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] text-sage font-semibold uppercase tracking-wider">
                             <CheckCircle className="w-3 h-3 text-sage inline shrink-0" />
                             <span>Verified Patron</span>
@@ -537,10 +537,10 @@ export const RatingsSection: React.FC = () => {
               <div className="px-5 py-4 bg-cream border-b border-champagne flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Camera className="w-4 h-4 text-gold" />
-                  <h4 className="font-serif text-base font-bold text-espresso">
+                  <h3 className="font-serif text-base font-bold text-espresso">
                     {lightboxData.name}
                     {lightboxData.occasion ? ` — ${lightboxData.occasion}` : ''}
-                  </h4>
+                  </h3>
                 </div>
                 <button
                   onClick={() => setLightboxData(null)}

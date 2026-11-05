@@ -147,7 +147,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-espresso leading-tight">
-            The Complete <span className="font-bold italic text-gold">Catalog</span>
+            Handcrafted Embroidery <span className="font-bold italic text-gold">Catalog</span>
           </h2>
           <div className="w-16 h-px bg-gold mx-auto my-3" />
           <p className="text-sm sm:text-base text-espresso/80 font-medium">

@@ -164,7 +164,7 @@ export const Header: React.FC<HeaderProps> = ({
             <a
               href={INSTAGRAM_URL}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="hidden sm:inline-flex p-2 text-espresso/75 hover:text-gold hover:bg-champagne/20 rounded-full transition-colors"
               aria-label="Visit Instagram"
               title="Follow @naqsh_e_noor7 on Instagram"
@@ -286,7 +286,7 @@ export const Header: React.FC<HeaderProps> = ({
             <a
               href={INSTAGRAM_URL}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="w-full flex items-center gap-3 px-3 py-2 rounded text-xs text-espresso/80 hover:bg-champagne/20 transition-colors"
             >
               <Instagram className="w-4 h-4 text-gold" />
