@@ -9,18 +9,21 @@ import {
   setCachedCategories,
 } from './cache';
 
-// Read from Vite env or localStorage override if admin entered them in the browser
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  localStorage.getItem('naqsh_supabase_url') ||
-  'https://pjfkocskpqeopentiqsj.supabase.co';
+// Read strictly from Vite environment variables (.env locally or Vercel Environment Variables)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  localStorage.getItem('naqsh_supabase_anon_key') ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqZmtvY3NrcHFlb3BlbnRpcXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MTYxMjAsImV4cCI6MjEwOTE5MjEyMH0.qlPPo7ya9G1Kun8wugxI5yhT0yuoSJRpRS91ptX_Vaw';
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error(
+    '[Supabase] Missing environment variables! Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env or Vercel project settings.'
+  );
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Fallback to placeholder to prevent client crash during initialization if env vars are missing
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key'
+);
 
 /**
  * -------------------------------------------------------------
