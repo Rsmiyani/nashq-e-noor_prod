@@ -1,0 +1,65 @@
+{
+  "summary": {
+    "health_score": 54,
+    "business_type": "luxury_ecommerce_boutique",
+    "domain": "naqsh-e-noor.in",
+    "top_findings": [
+      "robots.txt returns HTTP 404",
+      "sitemap.xml returns HTTP 404",
+      "Empty body in raw HTML (7 words) due to Client-Side Rendering (CSR)",
+      "Zero Schema.org JSON-LD structured data blocks",
+      "Social preview image (og:image) uses relative path /assets/detail.webp"
+    ],
+    "quick_wins": [
+      "Create public/robots.txt and public/sitemap.xml",
+      "Add canonical tag and absolute og:image in index.html",
+      "Inject Organization and Store JSON-LD schemas into index.html",
+      "Add public/llms.txt for AI search engine discovery"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Crawlability & Indexing",
+      "score": 30,
+      "findings": [
+        {
+          "title": "Missing robots.txt",
+          "severity": "Critical",
+          "description": "robots.txt returns HTTP 404",
+          "recommendation": "Deploy public/robots.txt with sitemap reference"
+        },
+        {
+          "title": "Missing sitemap.xml",
+          "severity": "Critical",
+          "description": "sitemap.xml returns HTTP 404",
+          "recommendation": "Deploy public/sitemap.xml with home and collection URLs"
+        }
+      ]
+    },
+    {
+      "name": "Structured Data",
+      "score": 0,
+      "findings": [
+        {
+          "title": "Zero Schema.org blocks",
+          "severity": "Critical",
+          "description": "No JSON-LD markup found on the site",
+          "recommendation": "Implement Organization, Store, and WebSite schemas"
+        }
+      ]
+    },
+    {
+      "name": "Content & Rendering",
+      "score": 45,
+      "findings": [
+        {
+          "title": "Thin Raw HTML",
+          "severity": "High",
+          "description": "Raw HTML contains only 7 words in <div id='root'></div>",
+          "recommendation": "Add semantic noscript and initial fallback content"
+        }
+      ]
+    }
+  ]
+}
+
