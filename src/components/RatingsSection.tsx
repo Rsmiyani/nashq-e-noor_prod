@@ -1,20 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Star,
   Sparkles,
   CheckCircle,
-  MessageSquare,
   Plus,
   X,
-  Heart,
   Quote,
   Filter,
   Check,
+  Camera,
+  UploadCloud,
+  Maximize2,
 } from 'lucide-react';
 import {
   DBReview,
   fetchLiveReviews,
   submitCustomerReview,
+  uploadReviewImage,
 } from '../services/supabase';
 
 const RATING_LABELS: Record<number, string> = {
@@ -38,9 +40,20 @@ export const RatingsSection: React.FC = () => {
   const [reviewText, setReviewText] = useState('');
   const [occasion, setOccasion] = useState('');
   const [city, setCity] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [successToast, setSuccessToast] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Lightbox Modal for customer photo viewing
+  const [lightboxData, setLightboxData] = useState<{
+    url: string;
+    name: string;
+    occasion?: string;
+    city?: string;
+  } | null>(null);
 
   // Load reviews on mount
   useEffect(() => {
@@ -62,9 +75,9 @@ export const RatingsSection: React.FC = () => {
     };
   }, []);
 
-  // Lock scroll when modal is open
+  // Lock scroll when any modal is open
   useEffect(() => {
-    if (isModalOpen) {
+    if (isModalOpen || lightboxData) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -72,7 +85,50 @@ export const RatingsSection: React.FC = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isModalOpen]);
+  }, [isModalOpen, lightboxData]);
+
+  // Handle image upload change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setFormError('Please select a valid image file (JPG, PNG, WebP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setFormError('Image size exceeds 5MB. Please choose a smaller photo.');
+      return;
+    }
+
+    setFormError('');
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setAuthorName('');
+    setStarRating(5);
+    setReviewText('');
+    setOccasion('');
+    setCity('');
+    handleRemoveImage();
+    setFormError('');
+  };
 
   // Statistics calculation
   const stats = useMemo(() => {
@@ -96,10 +152,9 @@ export const RatingsSection: React.FC = () => {
     return reviews.filter((r) => r.rating === filterRating);
   }, [reviews, filterRating]);
 
-  // Seamless loop marquee list (duplicates elements to ensure infinite seamless scrolling)
+  // Seamless loop marquee list
   const marqueeList = useMemo(() => {
     if (filteredReviews.length === 0) return [];
-    // Ensure the first half and second half are identical for seamless infinite -50% scroll
     const multiplier = Math.max(1, Math.ceil(5 / filteredReviews.length));
     const half: DBReview[] = [];
     for (let i = 0; i < multiplier; i++) {
@@ -124,25 +179,26 @@ export const RatingsSection: React.FC = () => {
     setSubmitting(true);
 
     try {
+      let uploadedImageUrl: string | undefined = undefined;
+
+      // Upload image to Supabase if provided (with automatic client base64 fallback)
+      if (imageFile) {
+        uploadedImageUrl = await uploadReviewImage(imageFile);
+      }
+
       const created = await submitCustomerReview({
         name: authorName.trim(),
         rating: starRating,
         review: reviewText.trim(),
         occasion: occasion.trim(),
         city: city.trim(),
+        image_url: uploadedImageUrl,
       });
 
       // Optimistically prepend to state
       setReviews((prev) => [created, ...prev.filter((r) => r.id !== created.id)]);
       setSubmitting(false);
-      setIsModalOpen(false);
-
-      // Reset form
-      setAuthorName('');
-      setStarRating(5);
-      setReviewText('');
-      setOccasion('');
-      setCity('');
+      handleCloseModal();
 
       // Show success toast
       setSuccessToast(true);
@@ -182,7 +238,7 @@ export const RatingsSection: React.FC = () => {
           </div>
 
           <p className="text-xs sm:text-sm lg:text-base text-espresso/80 font-normal leading-relaxed max-w-2xl mx-auto">
-            Every piece is hand-embroidered slowly and purposefully. Here are reflections shared by brides, art lovers, and patrons who welcomed Naqsh-e-Noor into their cherished celebrations.
+            Every piece is hand-embroidered slowly and purposefully. Here are reflections and photos shared by brides, art lovers, and patrons who welcomed Naqsh-e-Noor into their cherished celebrations.
           </p>
         </div>
 
@@ -254,7 +310,7 @@ export const RatingsSection: React.FC = () => {
                 <span>Write a Review</span>
               </button>
               <p className="text-[11px] text-muted-brown mt-2">
-                Share your handcrafted story with us
+                Share your handcrafted story &amp; photos with us
               </p>
             </div>
 
@@ -320,7 +376,7 @@ export const RatingsSection: React.FC = () => {
               return (
                 <div
                   key={`${item.id}-${index}`}
-                  className="w-[290px] xs:w-[330px] sm:w-[380px] h-[230px] sm:h-[245px] shrink-0 p-5 sm:p-6 rounded-2xl bg-cream border border-champagne/80 shadow-xs hover:shadow-luxury hover:border-gold/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden select-none"
+                  className="w-[300px] xs:w-[340px] sm:w-[390px] h-[270px] sm:h-[285px] shrink-0 p-5 sm:p-6 rounded-2xl bg-cream border border-champagne/80 shadow-xs hover:shadow-luxury hover:border-gold/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden select-none"
                 >
                   {/* Subtle Watermark Quote Mark */}
                   <Quote className="absolute -bottom-2 -right-2 w-16 h-16 text-champagne/20 pointer-events-none transform rotate-180" />
@@ -369,13 +425,66 @@ export const RatingsSection: React.FC = () => {
                     )}
 
                     {/* Review Text */}
-                    <p className="text-xs sm:text-[13px] text-espresso/85 leading-relaxed font-normal line-clamp-4">
+                    <p className={`text-xs sm:text-[13px] text-espresso/85 leading-relaxed font-normal ${
+                      item.image_url ? 'line-clamp-2 sm:line-clamp-3' : 'line-clamp-4'
+                    }`}>
                       "{item.review}"
                     </p>
+
+                    {/* Optional Customer Photo Thumbnail with Lightbox trigger */}
+                    {item.image_url && (
+                      <div className="mt-2.5 flex items-center gap-2.5 pt-2 border-t border-champagne/40">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLightboxData({
+                              url: item.image_url!,
+                              name: item.name,
+                              occasion: item.occasion,
+                              city: item.city,
+                            });
+                          }}
+                          className="relative group/thumb overflow-hidden rounded-xl border border-gold/40 shadow-xs focus:outline-none shrink-0"
+                          title="Click to view full photo"
+                        >
+                          <img
+                            src={item.image_url}
+                            alt={`${item.name}'s craft`}
+                            className="w-11 h-11 sm:w-12 sm:h-12 object-cover transition-transform duration-300 group-hover/thumb:scale-110"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-espresso/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                            <Maximize2 className="w-3.5 h-3.5 text-warm-ivory" />
+                          </div>
+                        </button>
+                        <div className="min-w-0">
+                          <span className="text-[10.5px] sm:text-[11px] font-semibold text-espresso flex items-center gap-1">
+                            <Camera className="w-3 h-3 text-gold" />
+                            Customer Photo
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLightboxData({
+                                url: item.image_url!,
+                                name: item.name,
+                                occasion: item.occasion,
+                                city: item.city,
+                              });
+                            }}
+                            className="text-[10px] text-gold hover:underline font-medium block"
+                          >
+                            View full craft photo ↗
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Footer: City & Date */}
-                  <div className="pt-3 mt-3 border-t border-champagne/40 flex items-center justify-between text-[11px] text-muted-brown">
+                  <div className="pt-2.5 mt-2 border-t border-champagne/40 flex items-center justify-between text-[11px] text-muted-brown">
                     <span className="truncate max-w-[140px]">{item.city || 'Atelier Patron'}</span>
                     <span className="shrink-0">
                       {item.created_at
@@ -407,7 +516,61 @@ export const RatingsSection: React.FC = () => {
             <Check className="w-5 h-5 text-gold" />
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-gold">Thank You!</p>
-              <p className="text-xs text-warm-ivory/90">Your review has been shared and is now live.</p>
+              <p className="text-xs text-warm-ivory/90">Your review and photo have been shared and are now live.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Lightbox: View Full Customer Photo */}
+        {lightboxData && (
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-espresso-dark/80 backdrop-blur-sm animate-fade-in"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setLightboxData(null)}
+          >
+            <div
+              className="relative max-w-2xl w-full bg-warm-ivory rounded-2xl overflow-hidden shadow-2xl border border-champagne my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Lightbox Header */}
+              <div className="px-5 py-4 bg-cream border-b border-champagne flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-gold" />
+                  <h4 className="font-serif text-base font-bold text-espresso">
+                    {lightboxData.name}
+                    {lightboxData.occasion ? ` — ${lightboxData.occasion}` : ''}
+                  </h4>
+                </div>
+                <button
+                  onClick={() => setLightboxData(null)}
+                  className="p-1.5 text-espresso/70 hover:text-espresso hover:bg-champagne/40 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* High-Res Image Display */}
+              <div className="p-4 bg-warm-ivory flex items-center justify-center max-h-[70vh]">
+                <img
+                  src={lightboxData.url}
+                  alt={lightboxData.name}
+                  className="max-h-[65vh] w-auto max-w-full rounded-xl object-contain shadow-luxury border border-champagne/60"
+                />
+              </div>
+
+              {/* Lightbox Footer */}
+              <div className="px-5 py-3 bg-cream border-t border-champagne text-xs text-muted-brown flex items-center justify-between">
+                <span>
+                  {lightboxData.city ? `Patron from ${lightboxData.city}` : 'Handcrafted Heirloom by Naqsh-e-Noor'}
+                </span>
+                <button
+                  onClick={() => setLightboxData(null)}
+                  className="px-4 py-1.5 rounded-lg bg-espresso text-warm-ivory text-xs font-semibold hover:bg-espresso-dark transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -428,11 +591,11 @@ export const RatingsSection: React.FC = () => {
                     Share Your Atelier Experience
                   </h3>
                   <p className="text-xs text-muted-brown mt-0.5">
-                    Your words inspire our artisans and preserve generational needlework.
+                    Your words and photos inspire our artisans and preserve generational needlework.
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-1.5 text-espresso/70 hover:text-espresso hover:bg-champagne/30 rounded-full transition-colors focus:outline-none"
                 >
                   <X className="w-5 h-5" />
@@ -513,6 +676,62 @@ export const RatingsSection: React.FC = () => {
                   />
                 </div>
 
+                {/* Optional Customer Photo Upload */}
+                <div>
+                  <label className="block text-xs font-semibold text-espresso uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Camera className="w-3.5 h-3.5 text-gold" />
+                      <span>Attach Photo of Your Piece (Optional)</span>
+                    </span>
+                    <span className="text-[10px] text-muted-brown font-normal lowercase tracking-normal">max 5mb</span>
+                  </label>
+
+                  {!imagePreview ? (
+                    <label className="border-2 border-dashed border-champagne hover:border-gold rounded-xl p-3.5 flex flex-col items-center justify-center cursor-pointer bg-cream/50 hover:bg-cream transition-all group">
+                      <UploadCloud className="w-6 h-6 text-muted-brown group-hover:text-gold transition-colors mb-1" />
+                      <span className="text-xs font-medium text-espresso group-hover:text-gold transition-colors">
+                        Click or drag a craft photo here
+                      </span>
+                      <span className="text-[10px] text-muted-brown mt-0.5">
+                        Showcase your bridal lehanga, hoop, or embroidery art
+                      </span>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  ) : (
+                    <div className="flex items-center gap-3 p-2.5 bg-cream rounded-xl border border-champagne">
+                      <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-champagne bg-warm-ivory shrink-0">
+                        <img
+                          src={imagePreview}
+                          alt="Review preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-espresso truncate">
+                          {imageFile?.name || 'Customer craft photo'}
+                        </p>
+                        <p className="text-[10.5px] text-muted-brown">
+                          {imageFile ? `${(imageFile.size / 1024).toFixed(0)} KB` : 'Image ready'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="p-1.5 rounded-lg text-espresso/70 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        title="Remove photo"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Two-Column: Occasion & City */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
@@ -546,7 +765,7 @@ export const RatingsSection: React.FC = () => {
                 <div className="pt-3 border-t border-champagne/60 flex items-center justify-end gap-3">
                   <button
                     type="button"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2.5 rounded-xl text-xs font-semibold text-espresso/70 hover:bg-champagne/30 transition-colors focus:outline-none"
                   >
                     Cancel
@@ -555,9 +774,16 @@ export const RatingsSection: React.FC = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-2.5 rounded-xl bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold uppercase tracking-wider shadow-md hover:shadow transition-all focus:outline-none"
+                    className="px-6 py-2.5 rounded-xl bg-gold hover:bg-gold-dark text-warm-ivory text-xs font-semibold uppercase tracking-wider shadow-md hover:shadow transition-all focus:outline-none flex items-center gap-1.5"
                   >
-                    {submitting ? 'Submitting...' : 'Post Review'}
+                    {submitting ? (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      <span>Post Review</span>
+                    )}
                   </button>
                 </div>
               </form>
@@ -570,4 +796,3 @@ export const RatingsSection: React.FC = () => {
     </section>
   );
 };
-

@@ -17,6 +17,8 @@ import {
   Sparkles,
   MessageSquare,
   ShieldCheck,
+  Camera,
+  UploadCloud,
 } from 'lucide-react';
 import {
   DBReview,
@@ -25,9 +27,11 @@ import {
   updateReviewStatus,
   deleteReview,
   checkReviewsTableHealth,
+  uploadReviewImage,
 } from '../../services/supabase';
 
 const SUPABASE_REVIEWS_SQL = `-- Run this in your Supabase SQL Editor (Dashboard > SQL Editor > New Query)
+-- 1. Create reviews table with optional customer craft photo support
 CREATE TABLE IF NOT EXISTS public.reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -35,25 +39,41 @@ CREATE TABLE IF NOT EXISTS public.reviews (
   review TEXT NOT NULL,
   occasion TEXT DEFAULT '',
   city TEXT DEFAULT '',
+  image_url TEXT DEFAULT NULL,
   status TEXT NOT NULL DEFAULT 'approved', -- 'approved' or 'hidden'
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security (RLS)
+-- 2. If table already exists, run this migration to add image_url:
+ALTER TABLE public.reviews ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT NULL;
+
+-- 3. Enable Row Level Security (RLS)
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
--- Allow public to read approved reviews
+-- 4. Review table RLS policies:
 DROP POLICY IF EXISTS "Public Read Reviews" ON public.reviews;
 CREATE POLICY "Public Read Reviews" ON public.reviews FOR SELECT USING (true);
 
--- Allow public to submit new reviews from the landing page
 DROP POLICY IF EXISTS "Public Insert Reviews" ON public.reviews;
 CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT WITH CHECK (true);
 
--- Allow admin full manage capability
 DROP POLICY IF EXISTS "Public Manage Reviews" ON public.reviews;
 CREATE POLICY "Public Manage Reviews" ON public.reviews FOR ALL USING (true) WITH CHECK (true);
+
+-- 5. Create Supabase Storage Bucket for Customer Review Photos
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('review-images', 'review-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 6. Storage Bucket RLS Policies (Allow public view and upload)
+DROP POLICY IF EXISTS "Public View Review Images" ON storage.objects;
+CREATE POLICY "Public View Review Images" ON storage.objects
+  FOR SELECT USING (bucket_id = 'review-images');
+
+DROP POLICY IF EXISTS "Public Upload Review Images" ON storage.objects;
+CREATE POLICY "Public Upload Review Images" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'review-images');
 `;
 
 export const AdminReviewsTab: React.FC = () => {
@@ -80,6 +100,9 @@ export const AdminReviewsTab: React.FC = () => {
   const [formOccasion, setFormOccasion] = useState('');
   const [formCity, setFormCity] = useState('');
   const [formStatus, setFormStatus] = useState<'approved' | 'hidden'>('approved');
+  const [formImageUrl, setFormImageUrl] = useState('');
+  const [formImageFile, setFormImageFile] = useState<File | null>(null);
+  const [formImagePreview, setFormImagePreview] = useState<string | null>(null);
   const [formSaving, setFormSaving] = useState(false);
 
   // Load reviews & check health
@@ -124,6 +147,9 @@ export const AdminReviewsTab: React.FC = () => {
     setFormOccasion(item.occasion || '');
     setFormCity(item.city || '');
     setFormStatus(item.status === 'hidden' ? 'hidden' : 'approved');
+    setFormImageUrl(item.image_url || '');
+    setFormImagePreview(item.image_url || null);
+    setFormImageFile(null);
   };
 
   // Reset Form
@@ -135,6 +161,9 @@ export const AdminReviewsTab: React.FC = () => {
     setFormOccasion('');
     setFormCity('');
     setFormStatus('approved');
+    setFormImageUrl('');
+    setFormImageFile(null);
+    setFormImagePreview(null);
   };
 
   // Save Add / Edit
@@ -147,6 +176,11 @@ export const AdminReviewsTab: React.FC = () => {
 
     setFormSaving(true);
     try {
+      let finalImageUrl = formImageUrl;
+      if (formImageFile) {
+        finalImageUrl = await uploadReviewImage(formImageFile);
+      }
+
       const saved = await upsertAdminReview({
         id: editingReview ? editingReview.id : undefined,
         name: formName.trim(),
@@ -154,6 +188,7 @@ export const AdminReviewsTab: React.FC = () => {
         review: formReview.trim(),
         occasion: formOccasion.trim(),
         city: formCity.trim(),
+        image_url: finalImageUrl || undefined,
         status: formStatus,
       });
 
@@ -497,9 +532,42 @@ export const AdminReviewsTab: React.FC = () => {
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-xs text-espresso/80 leading-relaxed font-normal line-clamp-4 mt-2">
+                  <p className="text-xs text-espresso/80 leading-relaxed font-normal line-clamp-3 mt-2">
                     "{item.review}"
                   </p>
+
+                  {/* Customer Photo Thumbnail */}
+                  {item.image_url && (
+                    <div className="mt-2.5 flex items-center gap-2.5 pt-2 border-t border-champagne/40">
+                      <a
+                        href={item.image_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="relative group/img overflow-hidden rounded-lg border border-gold/40 shrink-0"
+                        title="Open photo in new tab"
+                      >
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="w-10 h-10 object-cover group-hover/img:scale-110 transition-transform"
+                        />
+                      </a>
+                      <div className="min-w-0 text-[10.5px]">
+                        <span className="font-semibold text-espresso flex items-center gap-1">
+                          <Camera className="w-3 h-3 text-gold" />
+                          Customer Photo Attached
+                        </span>
+                        <a
+                          href={item.image_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-gold hover:underline text-[10px]"
+                        >
+                          View full image ↗
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Action Footer */}
@@ -647,6 +715,66 @@ export const AdminReviewsTab: React.FC = () => {
                   placeholder="The delicate silk stitches and metallic embroidery was exquisite..."
                   className="w-full px-3.5 py-2.5 rounded-xl bg-cream border border-champagne text-xs sm:text-sm text-espresso focus:outline-none focus:border-gold resize-none"
                 />
+              </div>
+
+              {/* Optional Photo Attachment */}
+              <div>
+                <label className="block font-semibold uppercase tracking-wider text-espresso mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-gold" />
+                    <span>Customer Photo (Optional)</span>
+                  </span>
+                  <span className="text-[10px] text-muted-brown lowercase">storage or base64</span>
+                </label>
+
+                {formImagePreview ? (
+                  <div className="flex items-center gap-3 p-2.5 bg-cream rounded-xl border border-champagne">
+                    <img
+                      src={formImagePreview}
+                      alt="Review preview"
+                      className="w-12 h-12 rounded-lg object-cover border border-champagne"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-espresso truncate">
+                        {formImageFile?.name || 'Customer craft photo'}
+                      </p>
+                      <p className="text-[10px] text-muted-brown">
+                        {formImageFile ? `${(formImageFile.size / 1024).toFixed(0)} KB` : 'Attached'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormImageFile(null);
+                        setFormImagePreview(null);
+                        setFormImageUrl('');
+                      }}
+                      className="p-1.5 rounded-lg text-red-600 hover:bg-red-50"
+                      title="Remove image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="border-2 border-dashed border-champagne hover:border-gold rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer bg-cream/50 hover:bg-cream transition-all group">
+                    <UploadCloud className="w-5 h-5 text-muted-brown group-hover:text-gold transition-colors mb-0.5" />
+                    <span className="text-xs font-medium text-espresso group-hover:text-gold transition-colors">
+                      Upload craft photo
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormImageFile(file);
+                          setFormImagePreview(URL.createObjectURL(file));
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
 
               {/* Occasion & City */}

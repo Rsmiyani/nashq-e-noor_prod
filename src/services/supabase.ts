@@ -573,6 +573,7 @@ export interface DBReview {
   review: string;
   occasion?: string;
   city?: string;
+  image_url?: string; // Optional customer photo (Supabase Storage URL or optimized Data URL)
   status: 'approved' | 'pending' | 'hidden';
   created_at?: string;
   updated_at?: string;
@@ -587,6 +588,7 @@ export const SEED_REVIEWS: DBReview[] = [
       'The zardozi work on my bridal lehanga border was beyond breathtaking. The micro-details in metallic gold dabka and pearls look like royal heirlooms. The direct WhatsApp consultation with the artisans gave me complete peace of mind.',
     occasion: 'Royal Bridal Trousseau',
     city: 'Jaipur / Delhi',
+    image_url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80',
     status: 'approved',
     created_at: new Date(Date.now() - 4 * 86400000).toISOString(),
   },
@@ -598,6 +600,7 @@ export const SEED_REVIEWS: DBReview[] = [
       'Ordered two custom botanical floral hoops for our anniversary. The French knots and shading on the silk threads are so delicate! They arrived beautifully packaged in sustainable linen with a handwritten care card.',
     occasion: 'Floral Embroidery Hoop',
     city: 'Ahmedabad',
+    image_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80',
     status: 'approved',
     created_at: new Date(Date.now() - 8 * 86400000).toISOString(),
   },
@@ -730,6 +733,45 @@ export async function fetchLiveReviews(includeHidden = false): Promise<DBReview[
 }
 
 /**
+ * Upload an optional customer photo for a review.
+ * Attempts to upload to the Supabase Storage bucket 'review-images'.
+ * If the bucket doesn't exist or upload fails, gracefully falls back to client-compressed WebP base64
+ * so customer photos are never lost.
+ */
+export async function uploadReviewImage(file: File): Promise<string> {
+  const fileExt = file.name.split('.').pop() || 'jpg';
+  const cleanExt = fileExt.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${cleanExt}`;
+  const filePath = `reviews/${fileName}`;
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('review-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (!error && data) {
+      const { data: publicUrlData } = supabase.storage
+        .from('review-images')
+        .getPublicUrl(filePath);
+
+      if (publicUrlData?.publicUrl) {
+        return publicUrlData.publicUrl;
+      }
+    } else if (error) {
+      console.warn('[Supabase Storage] Storage bucket upload failed, using optimized local compression fallback:', error.message);
+    }
+  } catch (err: any) {
+    console.warn('[Supabase Storage] Upload exception, fallback to base64:', err.message);
+  }
+
+  // Automatic client-side fallback: compressed WebP (max 1000px, 80% quality)
+  return await convertFileToBase64(file, 1000, 0.8);
+}
+
+/**
  * Submit a customer review from the storefront
  */
 export async function submitCustomerReview(reviewData: {
@@ -738,6 +780,7 @@ export async function submitCustomerReview(reviewData: {
   review: string;
   occasion?: string;
   city?: string;
+  image_url?: string;
 }): Promise<DBReview> {
   const newReview: DBReview = {
     id: 'rev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -746,6 +789,7 @@ export async function submitCustomerReview(reviewData: {
     review: reviewData.review.trim(),
     occasion: reviewData.occasion?.trim() || '',
     city: reviewData.city?.trim() || '',
+    image_url: reviewData.image_url?.trim() || undefined,
     status: 'approved', // instantly visible on storefront
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -765,6 +809,7 @@ export async function submitCustomerReview(reviewData: {
         review: newReview.review,
         occasion: newReview.occasion,
         city: newReview.city,
+        image_url: newReview.image_url || null,
         status: newReview.status,
       })
       .select()
@@ -792,6 +837,7 @@ export async function upsertAdminReview(review: Partial<DBReview> & {
   name: string;
   rating: number;
   review: string;
+  image_url?: string;
 }): Promise<DBReview> {
   const id = review.id || 'rev_' + Date.now();
   const formatted: DBReview = {
@@ -801,6 +847,7 @@ export async function upsertAdminReview(review: Partial<DBReview> & {
     review: review.review.trim(),
     occasion: review.occasion?.trim() || '',
     city: review.city?.trim() || '',
+    image_url: review.image_url?.trim() || undefined,
     status: review.status || 'approved',
     created_at: review.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -825,6 +872,7 @@ export async function upsertAdminReview(review: Partial<DBReview> & {
         review: formatted.review,
         occasion: formatted.occasion,
         city: formatted.city,
+        image_url: formatted.image_url || null,
         status: formatted.status,
         updated_at: new Date().toISOString(),
       })
